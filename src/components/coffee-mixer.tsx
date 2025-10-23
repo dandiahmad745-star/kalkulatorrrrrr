@@ -367,7 +367,7 @@ const CoffeeMixer = () => {
         <Card>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="p-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid h-auto w-full grid-cols-1 md:h-10 md:grid-cols-3">
                 <TabsTrigger value="profile"><Star className="mr-2"/> Flavor Profile</TabsTrigger>
                 <TabsTrigger value="experiment"><FlaskConical className="mr-2"/> Experiment Mode</TabsTrigger>
                 <TabsTrigger value="barista-math"><Calculator className="mr-2"/> Barista Math</TabsTrigger>
