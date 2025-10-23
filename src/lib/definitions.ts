@@ -12,6 +12,7 @@ export interface BrandOption {
   label: string;
   value: string;
   scores: Partial<FlavorProfile>;
+  cost: number; // Cost per ml or g
 }
 
 export interface IngredientOption {
@@ -19,6 +20,7 @@ export interface IngredientOption {
   value: string;
   unit: 'g' | 'ml';
   scores: Partial<FlavorProfile>;
+  cost: number; // Cost per ml or g
   brands?: BrandOption[];
   color?: string; // e.g., '#6b4f2c'
 }
@@ -51,6 +53,24 @@ export interface ExperimentResult {
   experimentalScore: number;
   justification: string;
 }
+
+export type GenerateRecipeFromDescriptionInput = {
+  description: string;
+};
+
+export type GenerateRecipeFromDescriptionOutput = {
+  coffeeBeans: string;
+  roastLevel: string;
+  brewingMethod: string;
+  milk: string;
+  milkBrand?: string;
+  creamer: string;
+  creamerBrand?: string;
+  syrup: string;
+  syrupBrand?: string;
+  toppings: string;
+  toppingsBrand?: string;
+};
 
 
 export const FLAVOR_PROFILE_KEYS: (keyof FlavorProfile)[] = [

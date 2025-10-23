@@ -1,8 +1,9 @@
 
 "use client";
 
-import { useState, useMemo, useTransition, useEffect } from 'react';
-import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { useState, useMemo, useTransition, useEffect, useCallback } from 'react';
+import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, DollarSign } from 'lucide-react';
+import type { z } from 'genkit';
 
 import type { FlavorProfile, Recipe, IngredientOption, BrandOption, ExperimentResult } from '@/lib/definitions';
 import { ingredientCategories } from '@/lib/ingredients';
@@ -24,6 +25,8 @@ import { SteamingCoffeeIcon } from './icons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from "@/components/ui/progress";
 import CupVisualizer from './cup-visualizer';
+import { Textarea } from './ui/textarea';
+import CostCalculator from './cost-calculator';
 
 
 const initialRecipe: Recipe = {
@@ -55,20 +58,19 @@ const CoffeeMixer = () => {
   const [aiSuggestion, setAiSuggestion] = useState('');
   const [experimentResult, setExperimentResult] = useState<ExperimentResult | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [toastInfo, setToastInfo] = useState<{ title: string; description: string } | null>(null);
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('profile');
-
-  useEffect(() => {
-    if (toastInfo) {
-      toast({title: toastInfo.title, description: toastInfo.description});
-      setToastInfo(null);
-    }
-  }, [toastInfo, toast]);
 
   const handleIngredientChange = (category: keyof Recipe, value: string | number) => {
      setRecipe(prev => {
       const newRecipe = { ...prev, [category]: value };
+
+      if (category === 'coffeeBeans') {
+        newRecipe.roastLevelAmount = newRecipe.coffeeBeansAmount;
+      } else if (category === 'coffeeBeansAmount') {
+        newRecipe.roastLevelAmount = Number(value);
+      }
+
 
       if (typeof value === 'string' && value === 'none') {
         const amountKey = `${category}Amount` as keyof Recipe;
@@ -103,14 +105,7 @@ const CoffeeMixer = () => {
             const isBrandCompatible = selectedIngredient.brands.some(b => b.value === currentBrand);
 
             if (!isBrandCompatible) {
-              const defaultBrand = selectedIngredient.brands[0]?.value;
-              newRecipe[brandKey] = defaultBrand;
-              if (currentBrand) {
-                 setToastInfo({
-                  title: 'Merek Disesuaikan',
-                  description: `Merek sebelumnya tidak tersedia untuk rasa ini, dialihkan ke ${capitalize(defaultBrand || '')}.`,
-                });
-              }
+              newRecipe[brandKey] = selectedIngredient.brands[0]?.value;
             }
           }
         }
@@ -148,7 +143,7 @@ const CoffeeMixer = () => {
       }
     });
 
-    setRecipe(prev => ({ ...prev, ...randomRecipe as Recipe }));
+    setRecipe(prev => ({ ...prev, ...randomRecipe as Recipe, id: '' }));
     toast({ title: 'Random Recipe Generated!', description: 'A new concoction is ready for you.' });
   };
 
@@ -228,8 +223,6 @@ const CoffeeMixer = () => {
     const baseProfile: FlavorProfile = {
       sweetness: 0, bitterness: 0, acidity: 0, body: 0, aroma: 0, aftertaste: 0, caffeine: 0
     };
-
-    const STANDARD_UNIT = 10; 
 
     return FLAVOR_PROFILE_KEYS.reduce((profile, key) => {
       let score = 0;
@@ -346,7 +339,7 @@ const CoffeeMixer = () => {
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
       {/* Left Column: Builder */}
-      <div className="lg:col-span-1">
+      <div className="lg:col-span-1 space-y-8">
         <Card>
           <CardHeader>
             <CardTitle>Coffee Builder</CardTitle>
@@ -365,6 +358,7 @@ const CoffeeMixer = () => {
             </div>
           </CardContent>
         </Card>
+        <CostCalculator recipe={recipe} />
       </div>
 
       {/* Right Column: Results & Saved */}
@@ -507,7 +501,5 @@ const CoffeeMixer = () => {
 };
 
 export default CoffeeMixer;
-
-    
 
     
