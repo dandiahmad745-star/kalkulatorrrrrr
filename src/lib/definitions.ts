@@ -20,6 +20,7 @@ export interface IngredientOption {
   unit: 'g' | 'ml';
   scores: Partial<FlavorProfile>;
   brands?: BrandOption[];
+  color?: string; // e.g., '#6b4f2c'
 }
 
 export interface Recipe {
@@ -71,3 +72,5 @@ export const FLAVOR_PROFILE_CONFIG = {
   aftertaste: { label: 'Aftertaste', color: 'hsl(var(--chart-1))' },
   caffeine: { label: 'Caffeine', color: 'hsl(var(--chart-2))' },
 } as const;
+
+    

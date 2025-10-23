@@ -22,7 +22,8 @@ import FlavorProfileChart from './flavor-profile-chart';
 import RecipeCard from './recipe-card';
 import { SteamingCoffeeIcon } from './icons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from "@/components/ui/progress"
+import { Progress } from "@/components/ui/progress";
+import CupVisualizer from './cup-visualizer';
 
 
 const initialRecipe: Recipe = {
@@ -383,14 +384,18 @@ const CoffeeMixer = () => {
                 <CardTitle>Your Current Blend</CardTitle>
                 <CardDescription>The estimated flavor profile and description of your creation.</CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                <div>
+              <CardContent className="grid grid-cols-1 gap-8 md:grid-cols-5">
+                <div className="md:col-span-2">
+                  <h3 className="mb-4 text-center font-semibold">Cup Visualizer</h3>
+                  <CupVisualizer recipe={recipe} />
+                </div>
+                <div className="md:col-span-3">
                   <h3 className="mb-4 text-center font-semibold">Flavor Profile</h3>
                   <FlavorProfileChart profile={flavorProfile} />
                 </div>
-                <div className="flex flex-col">
+                <div className="md:col-span-5">
                   <h3 className="mb-2 font-semibold">AI Flavor Description</h3>
-                  <Card className="flex-grow flex flex-col p-4 bg-secondary/50">
+                  <Card className="flex-grow flex flex-col p-4 bg-secondary/50 min-h-[150px]">
                     {isPending && activeTab === 'profile' ? (
                       <div className="m-auto flex flex-col items-center gap-2 text-muted-foreground">
                         <SteamingCoffeeIcon className="h-12 w-12" />
@@ -502,5 +507,7 @@ const CoffeeMixer = () => {
 };
 
 export default CoffeeMixer;
+
+    
 
     
