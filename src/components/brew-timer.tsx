@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import { Play, Pause, RotateCcw, Sparkles, Lightbulb, TimerIcon } from 'lucide-react';
 import type { Recipe } from '@/lib/definitions';
 import { ingredientCategories } from '@/lib/ingredients';
