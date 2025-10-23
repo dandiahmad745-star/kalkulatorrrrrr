@@ -166,5 +166,3 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
 };
 
 export default CupVisualizer;
-
-    
