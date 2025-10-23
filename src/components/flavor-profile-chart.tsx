@@ -1,7 +1,7 @@
 
 "use client";
 
-import { PolarGrid, PolarAngleAxis, Radar, RadarChart, ResponsiveContainer, PolarRadiusAxis, Dot } from 'recharts';
+import { PolarGrid, PolarAngleAxis, Radar, RadarChart, ResponsiveContainer, PolarRadiusAxis } from 'recharts';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { FlavorProfile } from '@/lib/definitions';
 import { FLAVOR_PROFILE_KEYS, FLAVOR_PROFILE_CONFIG } from '@/lib/definitions';
