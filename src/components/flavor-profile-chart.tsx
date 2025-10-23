@@ -1,7 +1,7 @@
 
 "use client";
 
-import { PolarGrid, PolarAngleAxis, Radar, RadarChart, ResponsiveContainer, PolarRadiusAxis } from 'recharts';
+import { PolarGrid, PolarAngleAxis, Radar, RadarChart, ResponsiveContainer, PolarRadiusAxis, Dot } from 'recharts';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { FlavorProfile } from '@/lib/definitions';
 import { FLAVOR_PROFILE_KEYS, FLAVOR_PROFILE_CONFIG } from '@/lib/definitions';
@@ -33,8 +33,20 @@ const FlavorProfileChart = ({ profile }: FlavorProfileChartProps) => {
         <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
         <PolarAngleAxis dataKey="metric" tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }} />
         <PolarRadiusAxis angle={30} domain={[0, maxVal]} tick={false} axisLine={false} />
-        <PolarGrid gridType="polygon" />
-        <Radar dataKey="value" fill="hsl(var(--primary))" fillOpacity={0.6} stroke="hsl(var(--primary))" />
+        <PolarGrid gridType="circle" />
+        <Radar 
+          dataKey="value" 
+          fill="hsl(var(--primary))" 
+          fillOpacity={0.6} 
+          stroke="hsl(var(--primary))" 
+          strokeWidth={2}
+          dot={{
+            r: 4,
+            fill: 'hsl(var(--primary-foreground))',
+            stroke: 'hsl(var(--primary))',
+            strokeWidth: 2,
+          }}
+        />
       </RadarChart>
     </ChartContainer>
   );
