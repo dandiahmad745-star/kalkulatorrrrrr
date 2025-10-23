@@ -17,6 +17,7 @@ export interface BrandOption {
 export interface IngredientOption {
   label: string;
   value: string;
+  unit: 'g' | 'ml';
   scores: Partial<FlavorProfile>;
   brands?: BrandOption[];
 }
@@ -24,15 +25,22 @@ export interface IngredientOption {
 export interface Recipe {
   id: string;
   coffeeBeans: string;
+  coffeeBeansAmount: number;
   roastLevel: string;
+  roastLevelAmount: number; // This might be conceptually odd, but for consistency
   brewingMethod: string;
+  brewingMethodAmount: number;
   milk: string;
+  milkAmount: number;
   milkBrand?: string;
   creamer: string;
+  creamerAmount: number;
   creamerBrand?: string;
   syrup: string;
+  syrupAmount: number;
   syrupBrand?: string;
   toppings: string;
+  toppingsAmount: number;
   toppingsBrand?: string;
 }
 

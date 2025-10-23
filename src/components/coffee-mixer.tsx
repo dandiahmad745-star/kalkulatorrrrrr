@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
 import FlavorProfileChart from './flavor-profile-chart';
 import RecipeCard from './recipe-card';
 import { SteamingCoffeeIcon } from './icons';
@@ -24,15 +25,22 @@ import { SteamingCoffeeIcon } from './icons';
 const initialRecipe: Recipe = {
   id: '',
   coffeeBeans: 'arabica',
+  coffeeBeansAmount: 18,
   roastLevel: 'medium',
+  roastLevelAmount: 18,
   brewingMethod: 'espresso',
+  brewingMethodAmount: 40,
   milk: 'none',
+  milkAmount: 0,
   milkBrand: undefined,
   creamer: 'none',
+  creamerAmount: 0,
   creamerBrand: undefined,
   syrup: 'none',
+  syrupAmount: 0,
   syrupBrand: undefined,
   toppings: 'none',
+  toppingsAmount: 0,
   toppingsBrand: undefined,
 };
 
@@ -51,19 +59,37 @@ const CoffeeMixer = () => {
     }
   }, [toastInfo, toast]);
 
-  const handleIngredientChange = (category: keyof Recipe, value: string) => {
-    const oldRecipe = recipe;
-    
-    const getNewRecipe = (prev: Recipe) => {
+  const handleIngredientChange = (category: keyof Recipe, value: string | number) => {
+     setRecipe(prev => {
       const newRecipe = { ...prev, [category]: value };
+
+      // If ingredient is set to 'none', reset its amount to 0
+      if (typeof value === 'string' && value === 'none') {
+        const amountKey = `${category}Amount` as keyof Recipe;
+        if (amountKey in newRecipe) {
+          (newRecipe as any)[amountKey] = 0;
+        }
+      }
+
+      // If ingredient is changed from 'none' to something else, set a default amount
+      if (typeof value === 'string' && value !== 'none' && prev[category as keyof Recipe] === 'none') {
+        const amountKey = `${category}Amount` as keyof Recipe;
+        if (amountKey in newRecipe) {
+           const ingredientOption = ingredientCategories[category as keyof typeof ingredientCategories]?.find(i => i.value === value);
+           if(ingredientOption?.unit === 'g') {
+             (newRecipe as any)[amountKey] = 10;
+           } else {
+             (newRecipe as any)[amountKey] = 15;
+           }
+        }
+      }
 
       const syncBrand = (
         ingredientKey: keyof typeof ingredientCategories,
-        brandKey: keyof Recipe,
-        ingredientOptions: IngredientOption[]
+        brandKey: keyof Recipe
       ) => {
         if (category === ingredientKey) {
-          const selectedIngredient = ingredientOptions.find(i => i.value === value);
+          const selectedIngredient = ingredientCategories[ingredientKey].find(i => i.value === value);
           
           if (value === 'none' || !selectedIngredient?.brands || selectedIngredient.brands.length === 0) {
             newRecipe[brandKey] = undefined;
@@ -75,7 +101,7 @@ const CoffeeMixer = () => {
               const defaultBrand = selectedIngredient.brands[0]?.value;
               newRecipe[brandKey] = defaultBrand;
               if (currentBrand) {
-                setToastInfo({
+                 setToastInfo({
                   title: 'Merek Disesuaikan',
                   description: `Merek sebelumnya tidak tersedia untuk rasa ini, dialihkan ke ${capitalize(defaultBrand || '')}.`,
                 });
@@ -85,15 +111,13 @@ const CoffeeMixer = () => {
         }
       };
       
-      syncBrand('milk', 'milkBrand', ingredientCategories.milk);
-      syncBrand('creamer', 'creamerBrand', ingredientCategories.creamer);
-      syncBrand('syrup', 'syrupBrand', ingredientCategories.syrup);
-      syncBrand('toppings', 'toppingsBrand', ingredientCategories.toppings);
+      syncBrand('milk', 'milkBrand');
+      syncBrand('creamer', 'creamerBrand');
+      syncBrand('syrup', 'syrupBrand');
+      syncBrand('toppings', 'toppingsBrand');
 
       return newRecipe;
-    };
-      
-    setRecipe(getNewRecipe);
+    });
   };
 
   const handleRandomize = () => {
@@ -103,6 +127,13 @@ const CoffeeMixer = () => {
       const randomOption = options[Math.floor(Math.random() * options.length)];
       randomRecipe[key as keyof Recipe] = randomOption.value;
       
+      const amountKey = `${key}Amount` as keyof Recipe;
+      if (randomOption.value === 'none') {
+        randomRecipe[amountKey] = 0;
+      } else {
+        randomRecipe[amountKey] = Math.floor(Math.random() * (randomOption.unit === 'g' ? 20 : 30)) + 5;
+      }
+
       const brandKey = `${key}Brand` as keyof Recipe;
       if (randomOption.value !== 'none' && randomOption.brands && randomOption.brands.length > 0) {
         const randomBrand = randomOption.brands[Math.floor(Math.random() * randomOption.brands.length)];
@@ -129,8 +160,13 @@ const CoffeeMixer = () => {
   
   const handleCopyRecipe = (recipeToCopy: Recipe) => {
     const text = Object.entries(recipeToCopy)
-      .filter(([key, value]) => key !== 'id' && value !== 'none' && value)
-      .map(([key, value]) => `${capitalize(key.replace(/([A-Z])/g, ' $1'))}: ${capitalize(value as string)}`)
+      .filter(([key, value]) => key !== 'id' && value !== 'none' && value && !key.endsWith('Amount'))
+      .map(([key, value]) => {
+          const amountKey = `${key}Amount` as keyof Recipe;
+          const amount = recipeToCopy[amountKey];
+          const unit = ingredientCategories[key as keyof typeof ingredientCategories]?.find(i => i.value === value)?.unit || '';
+          return `${capitalize(key.replace(/([A-Z])/g, ' $1'))}: ${capitalize(value as string)} (${amount}${unit})`
+      })
       .join('\n');
     navigator.clipboard.writeText(text);
     toast({ title: 'Recipe Copied!', description: 'Ready to share your masterpiece.' });
@@ -142,13 +178,13 @@ const CoffeeMixer = () => {
       const formatIngredient = (name: string, brand?: string) => brand ? `${name} (${brand})` : name;
       
       const input = {
-        coffeeBeans: recipe.coffeeBeans,
+        coffeeBeans: `${recipe.coffeeBeans} (${recipe.coffeeBeansAmount}g)`,
         roastLevel: recipe.roastLevel,
-        brewingMethod: recipe.brewingMethod,
-        milk: formatIngredient(recipe.milk, recipe.milkBrand),
-        creamer: formatIngredient(recipe.creamer, recipe.creamerBrand),
-        syrup: formatIngredient(recipe.syrup, recipe.syrupBrand),
-        toppings: formatIngredient(recipe.toppings, recipe.toppingsBrand),
+        brewingMethod: `${recipe.brewingMethod} (${recipe.brewingMethodAmount}ml)`,
+        milk: recipe.milk === 'none' ? 'none' : formatIngredient(`${recipe.milkAmount}ml ${recipe.milk}`, recipe.milkBrand),
+        creamer: recipe.creamer === 'none' ? 'none' : formatIngredient(`${recipe.creamerAmount}ml ${recipe.creamer}`, recipe.creamerBrand),
+        syrup: recipe.syrup === 'none' ? 'none' : formatIngredient(`${recipe.syrupAmount}ml ${recipe.syrup}`, recipe.syrupBrand),
+        toppings: recipe.toppings === 'none' ? 'none' : formatIngredient(`${recipe.toppingsAmount}g ${recipe.toppings}`, recipe.toppingsBrand),
       };
       const result = await getAIFlavorDescription(input);
       if (result.success) {
@@ -168,13 +204,18 @@ const CoffeeMixer = () => {
       sweetness: 0, bitterness: 0, acidity: 0, body: 0, aroma: 0, aftertaste: 0, caffeine: 0
     };
 
+    const STANDARD_UNIT = 10; // scores are based on per 10g/ml
+
     return FLAVOR_PROFILE_KEYS.reduce((profile, key) => {
       let score = 0;
       (Object.keys(ingredientCategories) as (keyof typeof ingredientCategories)[]).forEach(cat => {
         const selectedValue = recipe[cat as keyof Recipe] as string;
+        const amount = recipe[`${cat}Amount` as keyof Recipe] as number || 0;
+        const multiplier = amount / STANDARD_UNIT;
+
         const option = ingredientCategories[cat].find(o => o.value === selectedValue);
         if (option?.scores[key]) {
-          score += option.scores[key]!;
+          score += (option.scores[key]! * multiplier);
         }
 
         const brandKey = `${cat}Brand` as keyof Recipe;
@@ -183,11 +224,12 @@ const CoffeeMixer = () => {
         if (option?.brands && selectedBrandValue) {
           const brand = option.brands.find(b => b.value === selectedBrandValue);
           if (brand?.scores[key]) {
-            score += brand.scores[key]!;
+            score += (brand.scores[key]! * multiplier);
           }
         }
       });
-      profile[key] = score;
+      // Clamp the score to a reasonable range, e.g., 0-10, although total can exceed 10
+      profile[key] = Math.max(0, score);
       return profile;
     }, baseProfile);
   }, [recipe]);
@@ -200,11 +242,11 @@ const CoffeeMixer = () => {
     const selectedIngredient = ingredientCategories[ingredientKey].find(i => i.value === recipe[ingredientKey]);
     if (recipe[ingredientKey] !== 'none' && selectedIngredient?.brands && selectedIngredient.brands.length > 0) {
       return (
-        <div className="space-y-2 pl-2 pt-2">
+        <div className="space-y-2 mt-2">
           <Label className="text-sm text-muted-foreground">{label}</Label>
           <Select
             value={recipe[brandKey] as string || ''}
-            onValueChange={(value) => setRecipe(prev => ({...prev, [brandKey]: value}))}
+            onValueChange={(value) => handleIngredientChange(brandKey, value)}
           >
             <SelectTrigger>
               <SelectValue placeholder={`Select ${label}`} />
@@ -222,6 +264,59 @@ const CoffeeMixer = () => {
     }
     return null;
   }
+  
+  const renderIngredientSelector = (cat: keyof typeof ingredientCategories) => {
+    const options = ingredientCategories[cat];
+    const amountKey = `${cat}Amount` as keyof Recipe;
+    const brandKey = `${cat}Brand` as keyof Recipe;
+    const selectedOption = options.find(o => o.value === recipe[cat as keyof Recipe]);
+    const unit = selectedOption?.unit;
+
+    const isAmountDisabled = recipe[cat as keyof Recipe] === 'none' || cat === 'roastLevel' || cat === 'brewingMethod';
+    
+    // Special handling for keys that shouldn't show amount inputs like roastLevel or brewingMethod if they act as modifiers
+    const showAmountInput = unit && cat !== 'roastLevel' && cat !== 'brewingMethod';
+
+    return (
+      <div key={cat} className="space-y-2">
+        <Label>{capitalize(cat.replace(/([A-Z])/g, ' $1'))}</Label>
+        <div className={`grid gap-2 ${showAmountInput ? 'grid-cols-3' : 'grid-cols-1'}`}>
+          <div className={`${showAmountInput ? 'col-span-2' : 'col-span-1'}`}>
+            <Select
+              value={recipe[cat as keyof Recipe] as string || 'none'}
+              onValueChange={(value) => handleIngredientChange(cat as keyof Recipe, value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={`Select ${cat}`} />
+              </SelectTrigger>
+              <SelectContent>
+                {options.map((option: IngredientOption) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {showAmountInput && (
+            <div className="relative">
+              <Input
+                type="number"
+                value={recipe[amountKey] as number}
+                onChange={(e) => handleIngredientChange(amountKey, parseInt(e.target.value, 10) || 0)}
+                className="pr-8"
+                disabled={isAmountDisabled}
+              />
+              <span className="absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
+                {unit}
+              </span>
+            </div>
+          )}
+        </div>
+        {renderBrandSelector(cat, brandKey, `${capitalize(cat)} Brand`)}
+      </div>
+    )
+  }
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -233,27 +328,7 @@ const CoffeeMixer = () => {
             <CardDescription>Craft your ideal coffee.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {Object.entries(ingredientCategories).map(([key, options]) => (
-              <div key={key} className="space-y-2">
-                <Label>{capitalize(key.replace(/([A-Z])/g, ' $1'))}</Label>
-                <Select
-                  value={recipe[key as keyof Recipe] as string || 'none'}
-                  onValueChange={(value) => handleIngredientChange(key as keyof Recipe, value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={`Select ${key}`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.map((option: IngredientOption) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {renderBrandSelector(key as keyof typeof ingredientCategories, `${key}Brand` as keyof Recipe, `${capitalize(key)} Brand`)}
-              </div>
-            ))}
+            {Object.keys(ingredientCategories).map((key) => renderIngredientSelector(key as keyof typeof ingredientCategories))}
             <Separator />
             <div className="flex flex-wrap gap-2">
               <Button onClick={handleRandomize} variant="secondary" className="flex-1">
@@ -328,5 +403,3 @@ const CoffeeMixer = () => {
 };
 
 export default CoffeeMixer;
-
-    

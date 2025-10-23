@@ -2,6 +2,7 @@
 
 import { Copy, Trash2 } from 'lucide-react';
 import type { Recipe } from '@/lib/definitions';
+import { ingredientCategories } from '@/lib/ingredients';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -18,17 +19,40 @@ const RecipeCard = ({ recipe, onCopy, onDelete }: RecipeCardProps) => {
     if (value === 'none' || !value) return null;
     return brand ? `${capitalize(value)} (${capitalize(brand)})` : capitalize(value);
   };
-
-  const recipeDetails = [
-    { label: 'Beans', value: formatValue(recipe.coffeeBeans) },
-    { label: 'Roast', value: formatValue(recipe.roastLevel) },
-    { label: 'Method', value: formatValue(recipe.brewingMethod) },
-    { label: 'Milk', value: formatValue(recipe.milk, recipe.milkBrand) },
-    { label: 'Creamer', value: formatValue(recipe.creamer, recipe.creamerBrand) },
-    { label: 'Syrup', value: formatValue(recipe.syrup, recipe.syrupBrand)},
-    { label: 'Topping', value: formatValue(recipe.toppings, recipe.toppingsBrand) },
-  ].filter(d => d.value);
   
+  const getUnit = (category: string, value: string) => {
+      const cat = category.replace(/Amount$/, '') as keyof typeof ingredientCategories;
+      if (ingredientCategories[cat]) {
+        return ingredientCategories[cat].find(i => i.value === value)?.unit || '';
+      }
+      return '';
+  }
+
+  const recipeDetails = Object.entries(recipe)
+    .filter(([key, value]) => {
+      return !key.endsWith('Amount') && !key.endsWith('Brand') && key !== 'id' && value !== 'none' && value;
+    })
+    .map(([key, value]) => {
+      const amountKey = `${key}Amount` as keyof Recipe;
+      const brandKey = `${key}Brand` as keyof Recipe;
+      const amount = recipe[amountKey];
+      const brand = recipe[brandKey] as string | undefined;
+      const unit = getUnit(key, value as string);
+      
+      let displayValue = capitalize(value as string);
+      if (brand) {
+        displayValue += ` (${capitalize(brand)})`;
+      }
+       if (amount && (unit === 'g' || unit === 'ml')) {
+        displayValue += ` - ${amount}${unit}`;
+      }
+
+      return {
+        label: capitalize(key.replace(/([A-Z])/g, ' $1')),
+        value: displayValue,
+      };
+    });
+
   return (
     <Card className="flex flex-col bg-secondary/50">
       <CardHeader>
