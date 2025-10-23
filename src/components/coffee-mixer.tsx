@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useMemo, useTransition, useEffect, useCallback } from 'react';
-import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, DollarSign } from 'lucide-react';
+import { useState, useMemo, useTransition, useCallback } from 'react';
+import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, DollarSign, Calculator } from 'lucide-react';
 import type { z } from 'genkit';
 
 import type { FlavorProfile, Recipe, IngredientOption, BrandOption, ExperimentResult } from '@/lib/definitions';
@@ -25,8 +25,8 @@ import { SteamingCoffeeIcon } from './icons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from "@/components/ui/progress";
 import CupVisualizer from './cup-visualizer';
-import { Textarea } from './ui/textarea';
 import CostCalculator from './cost-calculator';
+import BaristaMathAssistant from './barista-math-assistant';
 
 
 const initialRecipe: Recipe = {
@@ -367,9 +367,10 @@ const CoffeeMixer = () => {
         <Card>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="p-6">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="profile"><Star className="mr-2"/> Flavor Profile</TabsTrigger>
                 <TabsTrigger value="experiment"><FlaskConical className="mr-2"/> Experiment Mode</TabsTrigger>
+                <TabsTrigger value="barista-math"><Calculator className="mr-2"/> Barista Math</TabsTrigger>
               </TabsList>
             </div>
             
@@ -468,12 +469,25 @@ const CoffeeMixer = () => {
                   </Card>
               </CardContent>
             </TabsContent>
+
+            <TabsContent value="barista-math">
+              <CardHeader className="pt-0">
+                <CardTitle>Barista Math Assistant</CardTitle>
+                <CardDescription>Calculate brew ratio, extraction, and more.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BaristaMathAssistant />
+              </CardContent>
+            </TabsContent>
+
           </Tabs>
 
           <div className="p-6 pt-0">
-            <Button onClick={handleGenerateDescription} disabled={isPending} className="w-full">
-              <Sparkles /> Generate with AI
-            </Button>
+            {(activeTab === 'profile' || activeTab === 'experiment') && (
+              <Button onClick={handleGenerateDescription} disabled={isPending} className="w-full">
+                <Sparkles /> Generate with AI
+              </Button>
+            )}
           </div>
         </Card>
 
