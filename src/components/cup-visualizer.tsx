@@ -1,16 +1,12 @@
 
 'use client';
 
+import * as React from 'react';
 import type { Recipe } from '@/lib/definitions';
 import { ingredientCategories } from '@/lib/ingredients';
 
 interface CupVisualizerProps {
   recipe: Recipe;
-}
-
-interface Layer {
-  color: string;
-  amount: number;
 }
 
 const MAX_VOLUME = 250; // Max volume of the cup in ml
@@ -21,14 +17,10 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
     return ingredient?.color || 'transparent';
   };
 
-  const layers: Layer[] = [
-    // Base coffee
+  const layers = [
     { color: getIngredientColor('brewingMethod', recipe.brewingMethod), amount: recipe.brewingMethodAmount },
-    // Syrup at the bottom
     { color: getIngredientColor('syrup', recipe.syrup), amount: recipe.syrupAmount },
-    // Milk
     { color: getIngredientColor('milk', recipe.milk), amount: recipe.milkAmount },
-    // Creamer
     { color: getIngredientColor('creamer', recipe.creamer), amount: recipe.creamerAmount },
   ].filter(l => l.amount > 0 && l.color !== 'transparent');
 
@@ -36,96 +28,146 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
     color: getIngredientColor('toppings', recipe.toppings),
     amount: recipe.toppingsAmount,
   };
-
+  
   const totalLiquidAmount = layers.reduce((sum, l) => sum + l.amount, 0);
 
-  const liquidLayers = layers.filter(l => l.amount > 0);
-
-  // Blend colors for a more realistic look
   const blendColors = (colors: { color: string; amount: number }[]): string => {
-    if (colors.length === 0) return '#f0f0f0'; // Empty cup
+    if (colors.length === 0) return '#e0e0e0';
     if (colors.length === 1) return colors[0].color;
-
     let totalAmount = 0;
     let r = 0, g = 0, b = 0;
-
     colors.forEach(({ color, amount }) => {
       const hex = color.replace('#', '');
       const layerR = parseInt(hex.substring(0, 2), 16);
       const layerG = parseInt(hex.substring(2, 4), 16);
       const layerB = parseInt(hex.substring(4, 6), 16);
-      
       totalAmount += amount;
       r += layerR * amount;
       g += layerG * amount;
       b += layerB * amount;
     });
-
-    if (totalAmount === 0) return '#f0f0f0';
-
+    if (totalAmount === 0) return '#e0e0e0';
     r = Math.round(r / totalAmount);
     g = Math.round(g / totalAmount);
     b = Math.round(b / totalAmount);
-
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   };
 
-  const finalColor = blendColors(liquidLayers);
-
+  const finalColor = blendColors(layers);
   const fillPercentage = Math.min(100, (totalLiquidAmount / MAX_VOLUME) * 100);
+  const liquidHeight = 175 * (fillPercentage / 100);
+  const liquidTopY = 180 - liquidHeight;
 
   const hasWhippedCream = recipe.toppings === 'whipped-cream';
   const hasDrizzle = recipe.toppings === 'caramel-drizzle';
   const hasShavings = recipe.toppings === 'chocolate-shavings' || recipe.toppings === 'cinnamon';
+  const isHot = recipe.brewingMethod !== 'cold-brew';
+
+  // Unique key to re-trigger animations
+  const recipeKey = JSON.stringify(recipe);
 
   return (
     <div className="relative w-full max-w-[250px] mx-auto aspect-[3/4]">
-      <svg viewBox="0 0 150 200" className="w-full h-full">
-        {/* Cup body */}
-        <path
-          d="M20,0 H130 L115,180 Q110,195 75,195 T35,180 L20,0 Z"
-          fill="#fff"
-          stroke="#e0e0e0"
-          strokeWidth="2"
-        />
-
-        {/* Liquid */}
+      <svg viewBox="0 0 160 200" className="w-full h-full overflow-visible">
         <defs>
           <clipPath id="liquidClip">
             <path d="M22,5 H128 L114,178 Q110,193 75,193 T36,178 L22,5 Z" />
           </clipPath>
+          <filter id="liquidWobble">
+            <feTurbulence type="fractalNoise" baseFrequency="0.02 0.1" numOctaves="1" result="warp">
+               <animate attributeName="baseFrequency" from="0.02 0.1" to="0.02 0.15" dur="0.3s" fill="freeze" begin="0s" keyTimes="0;1" values="0.02 0.1;0.02 0.15"/>
+               <animate attributeName="baseFrequency" from="0.02 0.15" to="0.02 0.1" dur="0.5s" fill="freeze" begin="0.3s" keyTimes="0;1" values="0.02 0.15;0.02 0.1"/>
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="warp" scale="3" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+           <linearGradient id="cupShine" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="white" stopOpacity="0.6"/>
+            <stop offset="40%" stopColor="white" stopOpacity="0.05"/>
+            <stop offset="100%" stopColor="white" stopOpacity="0.1"/>
+          </linearGradient>
+           <radialGradient id="liquidShine" cx="0.5" cy="1" r="0.8">
+            <stop offset="0%" stopColor={finalColor} />
+            <stop offset="100%" stopColor={blendColors([{color: finalColor, amount: 1}, {color: '#000000', amount: 0.1}])} />
+          </radialGradient>
         </defs>
         
-        <g clipPath="url(#liquidClip)">
-          {/* Base Liquid Fill */}
-          <rect
-            x="20"
-            y={180 - (175 * fillPercentage / 100)}
-            width="110"
-            height={175 * fillPercentage / 100}
-            fill={finalColor}
-            className="transition-all duration-500"
-          />
+        {/* Cup Shadow */}
+        <ellipse cx="75" cy="195" rx="50" ry="8" fill="black" opacity="0.1" />
 
-           {/* Toppings */}
-           {hasWhippedCream && (
+        {/* Cup Body */}
+        <path
+          d="M20,0 H130 L115,180 Q110,195 75,195 T35,180 L20,0 Z"
+          fill="#f9f9f9"
+          stroke="#e0e0e0"
+          strokeWidth="1"
+        />
+        {/* Cup Shine */}
+         <path
+          d="M30 10 C 50 50, 60 120, 45 180"
+          stroke="url(#cupShine)"
+          strokeWidth="12"
+          fill="none"
+          strokeLinecap="round"
+        />
+
+        {/* Liquid group with clip-path */}
+        <g clipPath="url(#liquidClip)" key={recipeKey}>
+          {fillPercentage > 0 && (
+            <>
+              {/* Animated Bubbles */}
+              {[...Array(5)].map((_, i) => (
+                <circle 
+                  key={i}
+                  cx={30 + Math.random() * 90} 
+                  cy={185}
+                  r={Math.random() * 2 + 1}
+                  fill={finalColor}
+                  opacity="0.3"
+                >
+                  <animate attributeName="cy" from="185" to={liquidTopY + 10} dur={`${Math.random() * 1.5 + 1}s`} begin={`${i * 0.2}s`} fill="freeze" />
+                  <animate attributeName="opacity" from="0.3" to="0" dur={`${Math.random() * 1.5 + 1}s`} begin={`${i * 0.2}s`} fill="freeze" />
+                </circle>
+              ))}
+
+              {/* Main Liquid Body */}
+              <rect
+                x="20"
+                y={liquidTopY}
+                width="110"
+                height={liquidHeight}
+                fill="url(#liquidShine)"
+                className="transition-all duration-700 ease-out"
+              />
+              {/* Liquid Surface */}
+              <ellipse
+                cx="75"
+                cy={liquidTopY}
+                rx="53"
+                ry="3"
+                fill={finalColor}
+                filter="url(#liquidWobble)"
+                className="transition-all duration-700 ease-out"
+              />
+            </>
+          )}
+
+          {/* Toppings */}
+          {hasWhippedCream && (
              <path
                d="M 40 100 C 40 80, 110 80, 110 100 C 110 80, 75 40, 75 40 C 75 40, 40 80, 40 100 Z"
                fill="#f7f7f7"
-               transform={`translate(0, ${75 - (175 * fillPercentage / 100)})`}
-               style={{filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))'}}
+               transform={`translate(0, ${-5 + liquidTopY - 100})`}
+               style={{filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))', transition: 'transform 0.7s ease-out'}}
             />
            )}
-          
            {hasDrizzle && (
-              <g transform={`translate(0, ${100 - (175 * fillPercentage / 100)})`}>
+              <g transform={`translate(0, ${liquidTopY - 100})`} style={{transition: 'transform 0.7s ease-out'}}>
                 <path d="M40 80 Q 60 90, 80 80 T 120 80" stroke={topping.color} strokeWidth="3" fill="none" strokeLinecap="round" />
                 <path d="M45 85 Q 65 95, 85 85 T 125 85" stroke={topping.color} strokeWidth="2" fill="none" strokeLinecap="round" />
               </g>
            )}
-
            {hasShavings && (
-              <g transform={`translate(0, ${100 - (175 * fillPercentage / 100)})`}>
+              <g transform={`translate(0, ${liquidTopY - 100})`} style={{transition: 'transform 0.7s ease-out'}}>
                 {[...Array(20)].map((_, i) => (
                   <circle 
                     key={i}
@@ -138,13 +180,28 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
                 ))}
               </g>
             )}
-
         </g>
-
-        {/* Cup top ellipse */}
-        <ellipse cx="75" cy="5" rx="55" ry="5" fill="#fff" stroke="#e0e0e0" strokeWidth="1.5" />
         
-        {/* Handle */}
+        {/* Steam Animation */}
+        {isHot && fillPercentage > 10 && (
+          <g transform={`translate(0, ${liquidTopY - 20})`} style={{transition: 'transform 0.7s ease-out'}}>
+            <path d="M 65 15 Q 65 5, 70 5 T 75 15" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5">
+              <animateTransform attributeName="transform" type="translate" values="0 0; 0 -15" dur="3s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.5;0" dur="3s" repeatCount="indefinite" />
+            </path>
+             <path d="M 75 15 Q 75 5, 80 5 T 85 15" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5">
+              <animateTransform attributeName="transform" type="translate" values="0 0; 0 -20" dur="4s" begin="1s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.5;0" dur="4s" begin="1s" repeatCount="indefinite" />
+            </path>
+             <path d="M 85 15 Q 85 5, 90 5 T 95 15" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5">
+              <animateTransform attributeName="transform" type="translate" values="0 0; 0 -18" dur="3.5s" begin="0.5s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.5;0" dur="3.5s" begin="0.5s" repeatCount="indefinite" />
+            </path>
+          </g>
+        )}
+
+        {/* Cup top ellipse and handle (on top) */}
+        <ellipse cx="75" cy="5" rx="55" ry="5" fill="#f9f9f9" stroke="#dcdcdc" strokeWidth="1" />
         <path
           d="M130,50 Q160,60 160,95 Q160,130 130,140"
           stroke="#e0e0e0"
@@ -154,15 +211,16 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
         />
         <path
           d="M130,50 Q160,60 160,95 Q160,130 130,140"
-          stroke="#fff"
+          stroke="#f9f9f9"
           strokeWidth="11"
           fill="none"
           strokeLinecap="round"
         />
-
       </svg>
     </div>
   );
 };
 
 export default CupVisualizer;
+
+    
