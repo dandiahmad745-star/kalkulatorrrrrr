@@ -22,17 +22,56 @@ export const brewingMethods: IngredientOption[] = [
 
 export const milks: IngredientOption[] = [
   { label: 'None', value: 'none', scores: {} },
-  { label: 'Whole Milk', value: 'whole-milk', scores: { sweetness: 1, body: 2, acidity: -1 } },
-  { label: 'Skim Milk', value: 'skim-milk', scores: { sweetness: 1, body: 1, acidity: -1 } },
-  { label: 'Oat Milk', value: 'oat-milk', scores: { sweetness: 2, body: 1 } },
-  { label: 'Almond Milk', value: 'almond-milk', scores: { sweetness: 1, aroma: 1 } },
+  {
+    label: 'Whole Milk',
+    value: 'whole-milk',
+    scores: { sweetness: 1, body: 1, acidity: -1 },
+    brands: [
+        { label: 'Greenfields', value: 'greenfields', scores: { body: 1, sweetness: 1, aftertaste: 1 } },
+        { label: 'Ultra Milk', value: 'ultra-milk', scores: { body: 0, sweetness: 2 } },
+    ]
+  },
+  {
+    label: 'SKM',
+    value: 'skm',
+    scores: { sweetness: 3, body: 2, acidity: -1 },
+    brands: [
+        { label: 'Frisian Flag', value: 'frisian-flag', scores: { sweetness: 2, body: 1 } },
+        { label: 'Indomilk', value: 'indomilk', scores: { sweetness: 2 } }
+    ]
+  },
+  { 
+    label: 'Oat Milk', 
+    value: 'oat-milk', 
+    scores: { sweetness: 2, body: 0 },
+    brands: [
+        { label: 'Oatly', value: 'oatly', scores: { sweetness: 1, body: 1 } }
+    ]
+  },
+  { 
+    label: 'Almond Milk', 
+    value: 'almond-milk', 
+    scores: { sweetness: 1, aroma: 1 },
+    brands: [
+        { label: 'Alpro', value: 'alpro', scores: { sweetness: 1, aroma: 0 } }
+    ]
+  },
 ];
 
 export const creamers: IngredientOption[] = [
   { label: 'None', value: 'none', scores: {} },
+  {
+    label: 'Original',
+    value: 'original',
+    scores: { sweetness: 2, body: 1 },
+    brands: [
+      { label: 'Coffeemate', value: 'coffeemate', scores: { sweetness: 1, body: 2 } },
+      { label: 'Indocafe Creamer', value: 'indocafe', scores: { body: 1 } },
+    ]
+  },
   { label: 'Vanilla', value: 'vanilla', scores: { sweetness: 3, aroma: 2 } },
   { label: 'Hazelnut', value: 'hazelnut', scores: { sweetness: 2, aroma: 3, aftertaste: 1 } },
-  { label: 'Caramel', value: 'caramel', scores: { sweetness: 4, aftertaste: 2 } },
+  { label: 'Caramel', value: 'caramel-creamer', scores: { sweetness: 4, aftertaste: 2 } },
 ];
 
 export const syrups: IngredientOption[] = [
@@ -59,7 +98,7 @@ export const syrups: IngredientOption[] = [
   },
   {
     label: 'Vanilla',
-    value: 'vanilla',
+    value: 'vanilla-syrup',
     scores: { sweetness: 5, aroma: 2 },
     brands: [
       { label: 'Monin', value: 'monin', scores: { aroma: 1 } },
@@ -72,9 +111,25 @@ export const syrups: IngredientOption[] = [
 export const toppings: IngredientOption[] = [
   { label: 'None', value: 'none', scores: {} },
   { label: 'Whipped Cream', value: 'whipped-cream', scores: { sweetness: 2, body: 1 } },
-  { label: 'Chocolate Shavings', value: 'chocolate-shavings', scores: { sweetness: 1, bitterness: 1, aroma: 1 } },
+  {
+    label: 'Chocolate Shavings',
+    value: 'chocolate-shavings',
+    scores: { sweetness: 1, bitterness: 1, aroma: 1 },
+    brands: [
+        { label: 'Van Houten', value: 'van-houten', scores: { bitterness: 1, body: 1 } },
+        { label: 'Cadbury', value: 'cadbury', scores: { sweetness: 1 } },
+    ]
+  },
   { label: 'Cinnamon', value: 'cinnamon', scores: { aroma: 2, aftertaste: 1 } },
-  { label: 'Caramel Drizzle', value: 'caramel-drizzle', scores: { sweetness: 3 } },
+  {
+    label: 'Caramel Drizzle',
+    value: 'caramel-drizzle',
+    scores: { sweetness: 3 },
+    brands: [
+        { label: 'Monin', value: 'monin', scores: { sweetness: 1 } },
+        { label: 'Ghirardelli', value: 'ghirardelli', scores: { aftertaste: 1 } },
+    ]
+  },
 ];
 
 export const ingredientCategories = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useTransition } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import { Bot, Plus, Shuffle, Sparkles } from 'lucide-react';
 
 import type { FlavorProfile, Recipe, IngredientOption, BrandOption } from '@/lib/definitions';
@@ -26,10 +26,13 @@ const initialRecipe: Recipe = {
   roastLevel: 'medium',
   brewingMethod: 'espresso',
   milk: 'none',
+  milkBrand: undefined,
   creamer: 'none',
+  creamerBrand: undefined,
   syrup: 'none',
   syrupBrand: undefined,
   toppings: 'none',
+  toppingsBrand: undefined,
 };
 
 const CoffeeMixer = () => {
@@ -42,32 +45,51 @@ const CoffeeMixer = () => {
   const handleIngredientChange = (category: keyof Recipe, value: string) => {
     setRecipe((prev) => {
       const newRecipe = { ...prev, [category]: value };
-      // If syrup is changed to none, reset brand
-      if (category === 'syrup' && value === 'none') {
-        newRecipe.syrupBrand = undefined;
-      }
-      // If syrup is changed, set default brand if available
-      if (category === 'syrup' && value !== 'none') {
-        const selectedSyrup = ingredientCategories.syrup.find(s => s.value === value);
-        newRecipe.syrupBrand = selectedSyrup?.brands?.[0]?.value;
-      }
+
+      const resetBrandAndSetDefault = (
+        ingredientKey: keyof Recipe, 
+        brandKey: keyof Recipe, 
+        ingredientOptions: IngredientOption[]
+      ) => {
+        if (category === ingredientKey) {
+          if (value === 'none') {
+            newRecipe[brandKey] = undefined;
+          } else {
+            const selectedIngredient = ingredientOptions.find(i => i.value === value);
+            newRecipe[brandKey] = selectedIngredient?.brands?.[0]?.value;
+          }
+        }
+      };
+      
+      resetBrandAndSetDefault('milk', 'milkBrand', ingredientCategories.milk);
+      resetBrandAndSetDefault('creamer', 'creamerBrand', ingredientCategories.creamer);
+      resetBrandAndSetDefault('syrup', 'syrupBrand', ingredientCategories.syrup);
+      resetBrandAndSetDefault('toppings', 'toppingsBrand', ingredientCategories.toppings);
+
       return newRecipe;
     });
   };
 
   const handleRandomize = () => {
     const randomRecipe: Partial<Recipe> = {};
-    Object.entries(ingredientCategories).forEach(([key, options]) => {
+    (Object.keys(ingredientCategories) as (keyof typeof ingredientCategories)[]).forEach((key) => {
+      const options = ingredientCategories[key];
       const randomOption = options[Math.floor(Math.random() * options.length)];
       randomRecipe[key as keyof Recipe] = randomOption.value;
-      if (key === 'syrup' && randomOption.value !== 'none' && randomOption.brands) {
+      
+      const brandKey = `${key}Brand` as keyof Recipe;
+      if (randomOption.value !== 'none' && randomOption.brands) {
         const randomBrand = randomOption.brands[Math.floor(Math.random() * randomOption.brands.length)];
-        randomRecipe.syrupBrand = randomBrand.value;
+        randomRecipe[brandKey] = randomBrand.value;
+      } else {
+        randomRecipe[brandKey] = undefined;
       }
     });
-    setRecipe(prev => ({ ...prev, ...randomRecipe }));
+
+    setRecipe(prev => ({ ...prev, ...randomRecipe as Recipe }));
     toast({ title: 'Random Recipe Generated!', description: 'A new concoction is ready for you.' });
   };
+
 
   const handleSaveRecipe = () => {
     const newRecipe = { ...recipe, id: new Date().toISOString() };
@@ -91,14 +113,16 @@ const CoffeeMixer = () => {
   const handleGenerateDescription = () => {
     startTransition(async () => {
       setFlavorDescription('');
+      const formatIngredient = (name: string, brand?: string) => brand ? `${name} (${brand})` : name;
+      
       const input = {
         coffeeBeans: recipe.coffeeBeans,
         roastLevel: recipe.roastLevel,
         brewingMethod: recipe.brewingMethod,
-        milk: recipe.milk,
-        creamer: recipe.creamer,
-        syrup: `${recipe.syrup} ${recipe.syrupBrand ? `(${recipe.syrupBrand})` : ''}`,
-        toppings: recipe.toppings,
+        milk: formatIngredient(recipe.milk, recipe.milkBrand),
+        creamer: formatIngredient(recipe.creamer, recipe.creamerBrand),
+        syrup: formatIngredient(recipe.syrup, recipe.syrupBrand),
+        toppings: formatIngredient(recipe.toppings, recipe.toppingsBrand),
       };
       const result = await getAIFlavorDescription(input);
       if (result.success) {
@@ -120,16 +144,18 @@ const CoffeeMixer = () => {
 
     return FLAVOR_PROFILE_KEYS.reduce((profile, key) => {
       let score = 0;
-      Object.keys(ingredientCategories).forEach(cat => {
-        const category = cat as keyof typeof ingredientCategories;
-        const selectedValue = recipe[category as keyof Recipe];
-        const option = ingredientCategories[category].find(o => o.value === selectedValue);
+      (Object.keys(ingredientCategories) as (keyof typeof ingredientCategories)[]).forEach(cat => {
+        const selectedValue = recipe[cat as keyof Recipe] as string;
+        const option = ingredientCategories[cat].find(o => o.value === selectedValue);
         if (option?.scores[key]) {
           score += option.scores[key]!;
         }
 
-        if (category === 'syrup' && option?.brands && recipe.syrupBrand) {
-          const brand = option.brands.find(b => b.value === recipe.syrupBrand);
+        const brandKey = `${cat}Brand` as keyof Recipe;
+        const selectedBrandValue = recipe[brandKey] as string | undefined;
+
+        if (option?.brands && selectedBrandValue) {
+          const brand = option.brands.find(b => b.value === selectedBrandValue);
           if (brand?.scores[key]) {
             score += brand.scores[key]!;
           }
@@ -140,7 +166,36 @@ const CoffeeMixer = () => {
     }, baseProfile);
   }, [recipe]);
   
-  const currentSyrup = ingredientCategories.syrup.find(s => s.value === recipe.syrup);
+  const renderBrandSelector = (
+    ingredientKey: keyof typeof ingredientCategories, 
+    brandKey: keyof Recipe,
+    label: string
+  ) => {
+    const selectedIngredient = ingredientCategories[ingredientKey].find(i => i.value === recipe[ingredientKey]);
+    if (recipe[ingredientKey] !== 'none' && selectedIngredient?.brands) {
+      return (
+        <div className="space-y-2 pl-2 pt-2">
+          <Label className="text-sm text-muted-foreground">{label}</Label>
+          <Select
+            value={recipe[brandKey] as string || ''}
+            onValueChange={(value) => handleIngredientChange(brandKey, value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={`Select ${label}`} />
+            </SelectTrigger>
+            <SelectContent>
+              {selectedIngredient.brands.map((brand: BrandOption) => (
+                <SelectItem key={brand.value} value={brand.value}>
+                  {brand.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -170,26 +225,7 @@ const CoffeeMixer = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                {key === 'syrup' && recipe.syrup !== 'none' && currentSyrup?.brands && (
-                  <div className="space-y-2 pl-2 pt-2">
-                    <Label className="text-sm text-muted-foreground">Syrup Brand</Label>
-                    <Select
-                      value={recipe.syrupBrand || ''}
-                      onValueChange={(value) => handleIngredientChange('syrupBrand', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select brand" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {currentSyrup.brands.map((brand: BrandOption) => (
-                          <SelectItem key={brand.value} value={brand.value}>
-                            {brand.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                {renderBrandSelector(key as keyof typeof ingredientCategories, `${key}Brand` as keyof Recipe, `${capitalize(key)} Brand`)}
               </div>
             ))}
             <Separator />

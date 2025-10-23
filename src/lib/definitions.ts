@@ -27,10 +27,13 @@ export interface Recipe {
   roastLevel: string;
   brewingMethod: string;
   milk: string;
+  milkBrand?: string;
   creamer: string;
+  creamerBrand?: string;
   syrup: string;
   syrupBrand?: string;
   toppings: string;
+  toppingsBrand?: string;
 }
 
 export const FLAVOR_PROFILE_KEYS: (keyof FlavorProfile)[] = [

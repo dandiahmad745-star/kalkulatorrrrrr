@@ -14,29 +14,34 @@ interface RecipeCardProps {
 }
 
 const RecipeCard = ({ recipe, onCopy, onDelete }: RecipeCardProps) => {
+  const formatValue = (value: string, brand?: string) => {
+    if (value === 'none' || !value) return null;
+    return brand ? `${capitalize(value)} (${capitalize(brand)})` : capitalize(value);
+  };
+
   const recipeDetails = [
-    { label: 'Beans', value: recipe.coffeeBeans },
-    { label: 'Roast', value: recipe.roastLevel },
-    { label: 'Method', value: recipe.brewingMethod },
-    { label: 'Milk', value: recipe.milk },
-    { label: 'Creamer', value: recipe.creamer },
-    { label: 'Syrup', value: `${recipe.syrup}${recipe.syrupBrand ? ` (${recipe.syrupBrand})` : ''}`},
-    { label: 'Topping', value: recipe.toppings },
-  ];
+    { label: 'Beans', value: formatValue(recipe.coffeeBeans) },
+    { label: 'Roast', value: formatValue(recipe.roastLevel) },
+    { label: 'Method', value: formatValue(recipe.brewingMethod) },
+    { label: 'Milk', value: formatValue(recipe.milk, recipe.milkBrand) },
+    { label: 'Creamer', value: formatValue(recipe.creamer, recipe.creamerBrand) },
+    { label: 'Syrup', value: formatValue(recipe.syrup, recipe.syrupBrand)},
+    { label: 'Topping', value: formatValue(recipe.toppings, recipe.toppingsBrand) },
+  ].filter(d => d.value);
   
   return (
     <Card className="flex flex-col bg-secondary/50">
       <CardHeader>
         <CardTitle className="text-xl">Custom Blend</CardTitle>
-        <CardDescription>Saved on {new Date().toLocaleDateString()}</CardDescription>
+        <CardDescription>Saved on {new Date(recipe.id).toLocaleDateString()}</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
         <Separator className="mb-4" />
         <ul className="space-y-2 text-sm">
-          {recipeDetails.filter(d => d.value !== 'none').map(detail => (
+          {recipeDetails.map(detail => (
             <li key={detail.label} className="flex justify-between">
               <span className="text-muted-foreground">{detail.label}:</span>
-              <span className="font-medium text-right">{capitalize(detail.value)}</span>
+              <span className="font-medium text-right">{detail.value}</span>
             </li>
           ))}
         </ul>
