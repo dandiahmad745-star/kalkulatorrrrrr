@@ -12,6 +12,12 @@ interface CupVisualizerProps {
 const MAX_VOLUME = 250; // Max volume of the cup in ml
 
 const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
   const getIngredientColor = (category: keyof typeof ingredientCategories, value: string): string => {
     const ingredient = ingredientCategories[category]?.find(i => i.value === value);
     return ingredient?.color || 'transparent';
@@ -112,7 +118,7 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
 
         {/* Liquid group with clip-path */}
         <g clipPath="url(#liquidClip)" key={recipeKey}>
-          {fillPercentage > 0 && (
+          {fillPercentage > 0 && isClient && (
             <>
               {/* Animated Bubbles */}
               {[...Array(5)].map((_, i) => (
@@ -160,13 +166,13 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
                style={{filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))', transition: 'transform 0.7s ease-out'}}
             />
            )}
-           {hasDrizzle && (
+           {hasDrizzle && isClient && (
               <g transform={`translate(0, ${liquidTopY - 100})`} style={{transition: 'transform 0.7s ease-out'}}>
                 <path d="M40 80 Q 60 90, 80 80 T 120 80" stroke={topping.color} strokeWidth="3" fill="none" strokeLinecap="round" />
                 <path d="M45 85 Q 65 95, 85 85 T 125 85" stroke={topping.color} strokeWidth="2" fill="none" strokeLinecap="round" />
               </g>
            )}
-           {hasShavings && (
+           {hasShavings && isClient && (
               <g transform={`translate(0, ${liquidTopY - 100})`} style={{transition: 'transform 0.7s ease-out'}}>
                 {[...Array(20)].map((_, i) => (
                   <circle 
