@@ -23,7 +23,7 @@ const GenerateRealisticFlavorDescriptionInputSchema = z.object({
 export type GenerateRealisticFlavorDescriptionInput = z.infer<typeof GenerateRealisticFlavorDescriptionInputSchema>;
 
 const GenerateRealisticFlavorDescriptionOutputSchema = z.object({
-  flavorDescription: z.string().describe('A realistic flavor description of the coffee recipe.'),
+  flavorDescription: z.string().describe('A realistic flavor description of the coffee recipe in Indonesian.'),
 });
 export type GenerateRealisticFlavorDescriptionOutput = z.infer<typeof GenerateRealisticFlavorDescriptionOutputSchema>;
 
@@ -37,17 +37,17 @@ const prompt = ai.definePrompt({
   name: 'generateRealisticFlavorDescriptionPrompt',
   input: {schema: GenerateRealisticFlavorDescriptionInputSchema},
   output: {schema: GenerateRealisticFlavorDescriptionOutputSchema},
-  prompt: `You are an expert coffee flavorist. Given the following coffee recipe, generate a realistic and appealing flavor description.
+  prompt: `Anda adalah seorang ahli perisa kopi. Berdasarkan resep kopi berikut, buatlah deskripsi rasa yang realistis dan menarik dalam Bahasa Indonesia.
 
-Coffee Beans: {{{coffeeBeans}}}
-Roast Level: {{{roastLevel}}}
-Brewing Method: {{{brewingMethod}}}
-Milk: {{{milk}}}
-Creamer: {{{creamer}}}
-Syrup: {{{syrup}}}
-Toppings: {{{toppings}}}
+Biji Kopi: {{{coffeeBeans}}}
+Tingkat Sangrai: {{{roastLevel}}}
+Metode Seduh: {{{brewingMethod}}}
+Susu: {{{milk}}}
+Krimer: {{{creamer}}}
+Sirup: {{{syrup}}}
+Topping: {{{toppings}}}
 
-Flavor Description:`, // No need to HTML escape, this is a .ts file.
+Deskripsi Rasa:`,
 });
 
 const generateRealisticFlavorDescriptionFlow = ai.defineFlow(
