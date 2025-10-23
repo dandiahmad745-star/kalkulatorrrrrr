@@ -81,8 +81,7 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
           </clipPath>
           <filter id="liquidWobble">
             <feTurbulence type="fractalNoise" baseFrequency="0.02 0.1" numOctaves="1" result="warp">
-               <animate attributeName="baseFrequency" from="0.02 0.1" to="0.02 0.15" dur="0.3s" fill="freeze" begin="0s" keyTimes="0;1" values="0.02 0.1;0.02 0.15"/>
-               <animate attributeName="baseFrequency" from="0.02 0.15" to="0.02 0.1" dur="0.5s" fill="freeze" begin="0.3s" keyTimes="0;1" values="0.02 0.15;0.02 0.1"/>
+               <animate attributeName="baseFrequency" values="0.02 0.1;0.02 0.12;0.02 0.1" dur="2s" repeatCount="indefinite"/>
             </feTurbulence>
             <feDisplacementMap in="SourceGraphic" in2="warp" scale="3" xChannelSelector="R" yChannelSelector="G" />
           </filter>
@@ -130,8 +129,8 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
                   fill={finalColor}
                   opacity="0.3"
                 >
-                  <animate attributeName="cy" from="185" to={liquidTopY + 10} dur={`${Math.random() * 1.5 + 1}s`} begin={`${i * 0.2}s`} fill="freeze" />
-                  <animate attributeName="opacity" from="0.3" to="0" dur={`${Math.random() * 1.5 + 1}s`} begin={`${i * 0.2}s`} fill="freeze" />
+                  <animate attributeName="cy" from="185" to={liquidTopY + 10} dur={`${Math.random() * 1.5 + 1}s`} begin={`${i * 0.2}s`} repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="0.3" to="0" dur={`${Math.random() * 1.5 + 1}s`} begin={`${i * 0.2}s`} repeatCount="indefinite" />
                 </circle>
               ))}
 
@@ -228,5 +227,3 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
 };
 
 export default CupVisualizer;
-
-    
