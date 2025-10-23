@@ -17,12 +17,61 @@ export const roastLevels: IngredientOption[] = [
 ];
 
 export const brewingMethods: IngredientOption[] = [
-  // Brewing methods affect extraction, not really 'amount', but we keep unit for consistency. Cost can be seen as operational cost.
-  { label: 'Espresso', value: 'espresso', unit: 'ml', scores: { bitterness: 2, body: 3, caffeine: 3, aftertaste: 2 }, color: '#3d2b1f', cost: 5, brewTime: 30 },
-  { label: 'Pour Over', value: 'pour-over', unit: 'ml', scores: { acidity: 2, body: -1, aroma: 2, aftertaste: 1 }, color: '#6b4f2c', cost: 4, brewTime: 180 },
-  { label: 'French Press', value: 'french-press', unit: 'ml', scores: { bitterness: 1, body: 2, aftertaste: 1 }, color: '#533c23', cost: 3, brewTime: 240 },
-  { label: 'Cold Brew', value: 'cold-brew', unit: 'ml', scores: { sweetness: 1, bitterness: -2, acidity: -2, caffeine: 3 }, color: '#4a2c1a', cost: 6, brewTime: 43200 },
+  // 1. Manual Brewing
+  { label: 'Pour Over (V60)', value: 'pour-over-v60', unit: 'ml', scores: { acidity: 3, body: -1, aroma: 3, sweetness: 1 }, color: '#6b4f2c', cost: 4, brewTime: 180 },
+  { label: 'Kalita Wave', value: 'kalita-wave', unit: 'ml', scores: { acidity: 2, body: 0, aroma: 2, sweetness: 2 }, color: '#705331', cost: 4, brewTime: 195 },
+  { label: 'Melitta Dripper', value: 'melitta-dripper', unit: 'ml', scores: { acidity: 1, body: 1, aroma: 1, sweetness: 1 }, color: '#6a513c', cost: 3, brewTime: 210 },
+  { label: 'Origami Dripper', value: 'origami-dripper', unit: 'ml', scores: { acidity: 3, body: -1, aroma: 3, sweetness: 2 }, color: '#7a5a3a', cost: 5, brewTime: 180 },
+  { label: 'Chemex', value: 'chemex', unit: 'ml', scores: { acidity: 2, body: -2, aroma: 2, sweetness: 1, aftertaste: 1 }, color: '#80644b', cost: 5, brewTime: 240 },
+  { label: 'AeroPress', value: 'aeropress', unit: 'ml', scores: { acidity: 2, body: 1, aroma: 2, sweetness: 2 }, color: '#4a382b', cost: 4, brewTime: 90 },
+  { label: 'French Press', value: 'french-press', unit: 'ml', scores: { bitterness: 1, body: 3, aftertaste: 1 }, color: '#533c23', cost: 3, brewTime: 240 },
+  { label: 'Clever Dripper', value: 'clever-dripper', unit: 'ml', scores: { body: 2, sweetness: 1, bitterness: 1 }, color: '#604832', cost: 4, brewTime: 180 },
+  { label: 'Syphon / Vacuum Pot', value: 'syphon', unit: 'ml', scores: { acidity: 2, body: 0, aroma: 3, aftertaste: 2 }, color: '#7e5d3f', cost: 8, brewTime: 150 },
+  { label: 'Vietnamese Drip (Phin)', value: 'vietnamese-drip', unit: 'ml', scores: { bitterness: 2, body: 2, sweetness: 1, caffeine: 3 }, color: '#402a1b', cost: 3, brewTime: 300 },
+  { label: 'Turkish Coffee (Cezve)', value: 'turkish-coffee', unit: 'ml', scores: { bitterness: 3, body: 3, aroma: 1, aftertaste: 2 }, color: '#3b2a21', cost: 5, brewTime: 180 },
+  { label: 'Moka Pot', value: 'moka-pot', unit: 'ml', scores: { bitterness: 3, body: 2, aftertaste: 1, caffeine: 2 }, color: '#3e2e23', cost: 3, brewTime: 300 },
+  { label: 'Nel Drip (Flannel)', value: 'nel-drip', unit: 'ml', scores: { body: 3, sweetness: 2, acidity: 1, aroma: 2 }, color: '#5b412f', cost: 7, brewTime: 210 },
+  { label: 'Woodneck Drip', value: 'woodneck-drip', unit: 'ml', scores: { body: 2, sweetness: 2, acidity: 1 }, color: '#684d38', cost: 7, brewTime: 180 },
+
+  // 2. Espresso-Based Brewing
+  { label: 'Espresso Machine', value: 'espresso-machine', unit: 'ml', scores: { bitterness: 2, body: 3, caffeine: 3, aftertaste: 2 }, color: '#3d2b1f', cost: 5, brewTime: 30 },
+  { label: 'Lever Espresso', value: 'lever-espresso', unit: 'ml', scores: { sweetness: 1, body: 3, aroma: 2, aftertaste: 2 }, color: '#463226', cost: 7, brewTime: 32 },
+  { label: 'Capsule Espresso', value: 'capsule-espresso', unit: 'ml', scores: { bitterness: 1, body: 1, caffeine: 2 }, color: '#554236', cost: 6, brewTime: 25 },
+  { label: 'Portable Espresso', value: 'portable-espresso', unit: 'ml', scores: { body: 2, caffeine: 3, aftertaste: 1 }, color: '#513f33', cost: 5, brewTime: 45 },
+  { label: 'Ristretto', value: 'ristretto', unit: 'ml', scores: { sweetness: 2, body: 2, acidity: 2, bitterness: 1, caffeine: 2 }, color: '#4a3120', cost: 5, brewTime: 20 },
+  { label: 'Lungo', value: 'lungo', unit: 'ml', scores: { bitterness: 3, body: 1, caffeine: 4 }, color: '#6d5340', cost: 5, brewTime: 50 },
+  { label: 'Doppio', value: 'doppio', unit: 'ml', scores: { bitterness: 2, body: 3, caffeine: 4, aftertaste: 2 }, color: '#3a281c', cost: 6, brewTime: 30 },
+  
+  // 3. Cold & Slow Brewing
+  { label: 'Cold Brew Immersion', value: 'cold-brew-immersion', unit: 'ml', scores: { sweetness: 2, bitterness: -2, acidity: -2, caffeine: 4, body: 2 }, color: '#4a2c1a', cost: 6, brewTime: 57600 },
+  { label: 'Cold Drip Tower', value: 'cold-drip-tower', unit: 'ml', scores: { sweetness: 1, bitterness: -2, acidity: -1, caffeine: 3, body: 1, aroma: 2 }, color: '#5c3d2a', cost: 9, brewTime: 21600 },
+  { label: 'Flash Brew (Japanese)', value: 'flash-brew', unit: 'ml', scores: { acidity: 3, aroma: 3, sweetness: 1, body: -1 }, color: '#85634e', cost: 6, brewTime: 180 },
+  { label: 'Nitro Cold Brew', value: 'nitro-cold-brew', unit: 'ml', scores: { sweetness: 2, bitterness: -2, acidity: -2, body: 3, aftertaste: 1 }, color: '#4e3a2b', cost: 8, brewTime: 57600 },
+  { label: 'Dutch Coffee', value: 'dutch-coffee', unit: 'ml', scores: { sweetness: 2, acidity: -1, body: 1, aroma: 2 }, color: '#634532', cost: 9, brewTime: 18000 },
+
+  // 4. Hybrid Brewing
+  { label: 'AeroPress (Inverted)', value: 'aeropress-inverted', unit: 'ml', scores: { body: 2, sweetness: 2, acidity: 1, aroma: 1 }, color: '#523c2d', cost: 4, brewTime: 120 },
+  { label: 'SteepShot Brewer', value: 'steepshot-brewer', unit: 'ml', scores: { body: 2, acidity: 2, sweetness: 1 }, color: '#5a4231', cost: 7, brewTime: 75 },
+
+  // 5. Alternative & Experimental
+  { label: 'Auto Drip Machine', value: 'auto-drip', unit: 'ml', scores: { body: 0, caffeine: 2 }, color: '#735b49', cost: 2, brewTime: 360 },
+  { label: 'Percolator', value: 'percolator', unit: 'ml', scores: { bitterness: 3, body: 1, aftertaste: -1 }, color: '#614c3e', cost: 2, brewTime: 480 },
+  { label: 'Sonic Brew (Ultrasonic)', value: 'sonic-brew', unit: 'ml', scores: { body: 1, aroma: 2, acidity: 1 }, color: '#7d6350', cost: 15, brewTime: 120 },
+
+  // 6. Traditional / World Culture
+  { label: 'Kopi Tubruk (Indonesia)', value: 'kopi-tubruk', unit: 'ml', scores: { bitterness: 2, body: 3, caffeine: 3, aftertaste: 2 }, color: '#443125', cost: 1, brewTime: 240 },
+  { label: 'Kopi Tarek (Malaysia)', value: 'kopi-tarek', unit: 'ml', scores: { sweetness: 3, body: 2, bitterness: 1 }, color: '#a57a5a', cost: 2, brewTime: 300 },
+  { label: 'Indian Filter Coffee', value: 'indian-filter-coffee', unit: 'ml', scores: { bitterness: 2, body: 2, sweetness: 1 }, color: '#6d4c38', cost: 3, brewTime: 600 },
+  { label: 'Cuban Coffee', value: 'cuban-coffee', unit: 'ml', scores: { sweetness: 4, body: 3, bitterness: 2, caffeine: 3 }, color: '#503829', cost: 4, brewTime: 45 },
+  { label: 'Arabic Coffee (Qahwa)', value: 'qahwa', unit: 'ml', scores: { aroma: 4, acidity: 1, body: -1 }, color: '#c5a98b', cost: 6, brewTime: 900 },
+  { label: 'Ethiopian Jebena', value: 'ethiopian-jebena', unit: 'ml', scores: { body: 2, aroma: 3, aftertaste: 2 }, color: '#5a422d', cost: 5, brewTime: 420 },
+
+  // 7. Modern / Premium Brewing
+  { label: 'AI Barista Brewer', value: 'ai-barista-brewer', unit: 'ml', scores: { sweetness: 2, acidity: 2, body: 1, aroma: 2, aftertaste: 2 }, color: '#7b604e', cost: 20, brewTime: 180 },
+  { label: 'Spinn Smart Brewer', value: 'spinn-smart-brewer', unit: 'ml', scores: { sweetness: 1, body: 1, aroma: 1 }, color: '#6f5747', cost: 18, brewTime: 120 },
+  { label: 'Ratio Eight Brewer', value: 'ratio-eight-brewer', unit: 'ml', scores: { acidity: 2, body: 0, aroma: 2, sweetness: 2 }, color: '#8a6e5b', cost: 19, brewTime: 240 },
 ];
+
 
 export const milks: IngredientOption[] = [
   { label: 'None', value: 'none', unit: 'ml', scores: {}, color: 'transparent', cost: 0 },
