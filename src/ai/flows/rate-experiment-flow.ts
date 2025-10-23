@@ -12,13 +12,13 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const RateExperimentInputSchema = z.object({
-  coffeeBeans: z.string().describe('The type of coffee beans used in the recipe.'),
+  coffeeBeans: z.string().describe('The type and amount of coffee beans used in the recipe (e.g., "18g arabica").'),
   roastLevel: z.string().describe('The roast level of the coffee beans (e.g., light, medium, dark).'),
-  brewingMethod: z.string().describe('The brewing method used (e.g., espresso, pour over, French press).'),
-  milk: z.string().describe('The type of milk added to the coffee (e.g., whole milk, almond milk, oat milk).'),
-  creamer: z.string().describe('The type of creamer added to the coffee (e.g., vanilla, hazelnut).'),
-  syrup: z.string().describe('The type of syrup added to the coffee (e.g., caramel, chocolate).'),
-  toppings: z.string().describe('The toppings added to the coffee (e.g., whipped cream, chocolate shavings).'),
+  brewingMethod: z.string().describe('The brewing method and amount used (e.g., "40ml espresso").'),
+  milk: z.string().describe('The type, amount, and brand of milk added (e.g., "15ml whole-milk (greenfields)").'),
+  creamer: z.string().describe('The type, amount, and brand of creamer added (e.g., "15ml french-vanilla-creamer (coffeemate)").'),
+  syrup: z.string().describe('The type, amount, and brand of syrup added (e.g., "15ml vanilla-syrup (monin)").'),
+  toppings: z.string().describe('The type, amount, and brand of toppings added (e.g., "10g chocolate-shavings (van-houten)").'),
 });
 export type RateExperimentInput = z.infer<typeof RateExperimentInputSchema>;
 
