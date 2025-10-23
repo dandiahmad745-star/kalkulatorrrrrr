@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, useEffect } from 'react';
 import { Bot, Plus, Shuffle, Sparkles } from 'lucide-react';
 
 import type { FlavorProfile, Recipe, IngredientOption, BrandOption } from '@/lib/definitions';
@@ -41,9 +42,19 @@ const CoffeeMixer = () => {
   const [flavorDescription, setFlavorDescription] = useState('');
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const [toastInfo, setToastInfo] = useState<{ title: string; description: string } | null>(null);
+
+  useEffect(() => {
+    if (toastInfo) {
+      toast(toastInfo);
+      setToastInfo(null);
+    }
+  }, [toastInfo, toast]);
 
   const handleIngredientChange = (category: keyof Recipe, value: string) => {
-    setRecipe((prev) => {
+    const oldRecipe = recipe;
+    
+    const getNewRecipe = (prev: Recipe) => {
       const newRecipe = { ...prev, [category]: value };
 
       const syncBrand = (
@@ -51,11 +62,10 @@ const CoffeeMixer = () => {
         brandKey: keyof Recipe,
         ingredientOptions: IngredientOption[]
       ) => {
-        // If we are changing the main ingredient (e.g. milk flavor)
         if (category === ingredientKey) {
           const selectedIngredient = ingredientOptions.find(i => i.value === value);
           
-          if (value === 'none' || !selectedIngredient?.brands) {
+          if (value === 'none' || !selectedIngredient?.brands || selectedIngredient.brands.length === 0) {
             newRecipe[brandKey] = undefined;
           } else {
             const currentBrand = newRecipe[brandKey] as string | undefined;
@@ -64,8 +74,8 @@ const CoffeeMixer = () => {
             if (!isBrandCompatible) {
               const defaultBrand = selectedIngredient.brands[0]?.value;
               newRecipe[brandKey] = defaultBrand;
-              if(currentBrand) {
-                toast({
+              if (currentBrand) {
+                setToastInfo({
                   title: 'Merek Disesuaikan',
                   description: `Merek sebelumnya tidak tersedia untuk rasa ini, dialihkan ke ${capitalize(defaultBrand || '')}.`,
                 });
@@ -81,7 +91,9 @@ const CoffeeMixer = () => {
       syncBrand('toppings', 'toppingsBrand', ingredientCategories.toppings);
 
       return newRecipe;
-    });
+    };
+      
+    setRecipe(getNewRecipe);
   };
 
   const handleRandomize = () => {
@@ -92,7 +104,7 @@ const CoffeeMixer = () => {
       randomRecipe[key as keyof Recipe] = randomOption.value;
       
       const brandKey = `${key}Brand` as keyof Recipe;
-      if (randomOption.value !== 'none' && randomOption.brands) {
+      if (randomOption.value !== 'none' && randomOption.brands && randomOption.brands.length > 0) {
         const randomBrand = randomOption.brands[Math.floor(Math.random() * randomOption.brands.length)];
         randomRecipe[brandKey] = randomBrand.value;
       } else {
@@ -186,7 +198,7 @@ const CoffeeMixer = () => {
     label: string
   ) => {
     const selectedIngredient = ingredientCategories[ingredientKey].find(i => i.value === recipe[ingredientKey]);
-    if (recipe[ingredientKey] !== 'none' && selectedIngredient?.brands) {
+    if (recipe[ingredientKey] !== 'none' && selectedIngredient?.brands && selectedIngredient.brands.length > 0) {
       return (
         <div className="space-y-2 pl-2 pt-2">
           <Label className="text-sm text-muted-foreground">{label}</Label>
@@ -316,3 +328,5 @@ const CoffeeMixer = () => {
 };
 
 export default CoffeeMixer;
+
+    
