@@ -24,6 +24,7 @@ export type GenerateRealisticFlavorDescriptionInput = z.infer<typeof GenerateRea
 
 const GenerateRealisticFlavorDescriptionOutputSchema = z.object({
   flavorDescription: z.string().describe('A realistic flavor description of the coffee recipe in Indonesian.'),
+  suggestion: z.string().describe('A suggestion to improve the coffee recipe in Indonesian. For example: "kurangi 10 ml sirup agar rasa kopi tidak terlalu manis".'),
 });
 export type GenerateRealisticFlavorDescriptionOutput = z.infer<typeof GenerateRealisticFlavorDescriptionOutputSchema>;
 
@@ -47,7 +48,7 @@ Krimer: {{{creamer}}}
 Sirup: {{{syrup}}}
 Topping: {{{toppings}}}
 
-Deskripsi Rasa:`,
+Selain deskripsi rasa, berikan juga satu saran penyesuaian untuk meningkatkan keseimbangan rasa resep ini (contoh: "kurangi 10 ml sirup agar rasa kopi tidak terlalu manis").`,
 });
 
 const generateRealisticFlavorDescriptionFlow = ai.defineFlow(

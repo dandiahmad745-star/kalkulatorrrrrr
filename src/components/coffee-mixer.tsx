@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useTransition, useEffect } from 'react';
-import { Bot, Plus, Shuffle, Sparkles } from 'lucide-react';
+import { Bot, Lightbulb, Plus, Shuffle, Sparkles } from 'lucide-react';
 
 import type { FlavorProfile, Recipe, IngredientOption, BrandOption } from '@/lib/definitions';
 import { ingredientCategories } from '@/lib/ingredients';
@@ -48,9 +48,10 @@ const CoffeeMixer = () => {
   const [recipe, setRecipe] = useState<Recipe>(initialRecipe);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [flavorDescription, setFlavorDescription] = useState('');
+  const [aiSuggestion, setAiSuggestion] = useState('');
   const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
   const [toastInfo, setToastInfo] = useState<{ title: string; description: string } | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (toastInfo) {
@@ -63,7 +64,6 @@ const CoffeeMixer = () => {
      setRecipe(prev => {
       const newRecipe = { ...prev, [category]: value };
 
-      // If ingredient is set to 'none', reset its amount to 0
       if (typeof value === 'string' && value === 'none') {
         const amountKey = `${category}Amount` as keyof Recipe;
         if (amountKey in newRecipe) {
@@ -71,7 +71,6 @@ const CoffeeMixer = () => {
         }
       }
 
-      // If ingredient is changed from 'none' to something else, set a default amount
       if (typeof value === 'string' && value !== 'none' && prev[category as keyof Recipe] === 'none') {
         const amountKey = `${category}Amount` as keyof Recipe;
         if (amountKey in newRecipe) {
@@ -175,6 +174,7 @@ const CoffeeMixer = () => {
   const handleGenerateDescription = () => {
     startTransition(async () => {
       setFlavorDescription('');
+      setAiSuggestion('');
       const formatIngredient = (name: string, brand?: string) => brand ? `${name} (${brand})` : name;
       
       const input = {
@@ -188,7 +188,8 @@ const CoffeeMixer = () => {
       };
       const result = await getAIFlavorDescription(input);
       if (result.success) {
-        setFlavorDescription(result.description);
+        setFlavorDescription(result.data.flavorDescription);
+        setAiSuggestion(result.data.suggestion);
       } else {
         toast({
           variant: 'destructive',
@@ -204,7 +205,7 @@ const CoffeeMixer = () => {
       sweetness: 0, bitterness: 0, acidity: 0, body: 0, aroma: 0, aftertaste: 0, caffeine: 0
     };
 
-    const STANDARD_UNIT = 10; // scores are based on per 10g/ml
+    const STANDARD_UNIT = 10; 
 
     return FLAVOR_PROFILE_KEYS.reduce((profile, key) => {
       let score = 0;
@@ -228,7 +229,6 @@ const CoffeeMixer = () => {
           }
         }
       });
-      // Clamp the score to a reasonable range, e.g., 0-10, although total can exceed 10
       profile[key] = Math.max(0, score);
       return profile;
     }, baseProfile);
@@ -272,10 +272,9 @@ const CoffeeMixer = () => {
     const selectedOption = options.find(o => o.value === recipe[cat as keyof Recipe]);
     const unit = selectedOption?.unit;
 
-    const isAmountDisabled = recipe[cat as keyof Recipe] === 'none' || cat === 'roastLevel' || cat === 'brewingMethod';
+    const isAmountDisabled = recipe[cat as keyof Recipe] === 'none';
     
-    // Special handling for keys that shouldn't show amount inputs like roastLevel or brewingMethod if they act as modifiers
-    const showAmountInput = unit && cat !== 'roastLevel' && cat !== 'brewingMethod';
+    const showAmountInput = unit;
 
     return (
       <div key={cat} className="space-y-2">
@@ -364,7 +363,20 @@ const CoffeeMixer = () => {
                     <span>Brewing description...</span>
                   </div>
                 ) : flavorDescription ? (
-                  <p className="text-sm leading-relaxed">{flavorDescription}</p>
+                  <div className="space-y-4">
+                    <p className="text-sm leading-relaxed">{flavorDescription}</p>
+                    {aiSuggestion && (
+                      <>
+                        <Separator/>
+                        <div className="flex items-start gap-3">
+                           <Lightbulb className="h-5 w-5 mt-0.5 text-primary flex-shrink-0" />
+                          <p className="text-sm text-muted-foreground font-medium">
+                            <span className="font-bold text-foreground">Saran:</span> {aiSuggestion}
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 ) : (
                   <div className="m-auto flex flex-col items-center gap-2 text-center text-muted-foreground">
                     <Bot className="h-10 w-10" />
