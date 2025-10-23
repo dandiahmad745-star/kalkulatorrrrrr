@@ -18,10 +18,10 @@ export const roastLevels: IngredientOption[] = [
 
 export const brewingMethods: IngredientOption[] = [
   // Brewing methods affect extraction, not really 'amount', but we keep unit for consistency. Cost can be seen as operational cost.
-  { label: 'Espresso', value: 'espresso', unit: 'ml', scores: { bitterness: 2, body: 3, caffeine: 3, aftertaste: 2 }, color: '#3d2b1f', cost: 5 },
-  { label: 'Pour Over', value: 'pour-over', unit: 'ml', scores: { acidity: 2, body: -1, aroma: 2, aftertaste: 1 }, color: '#6b4f2c', cost: 4 },
-  { label: 'French Press', value: 'french-press', unit: 'ml', scores: { bitterness: 1, body: 2, aftertaste: 1 }, color: '#533c23', cost: 3 },
-  { label: 'Cold Brew', value: 'cold-brew', unit: 'ml', scores: { sweetness: 1, bitterness: -2, acidity: -2, caffeine: 3 }, color: '#4a2c1a', cost: 6 },
+  { label: 'Espresso', value: 'espresso', unit: 'ml', scores: { bitterness: 2, body: 3, caffeine: 3, aftertaste: 2 }, color: '#3d2b1f', cost: 5, brewTime: 30 },
+  { label: 'Pour Over', value: 'pour-over', unit: 'ml', scores: { acidity: 2, body: -1, aroma: 2, aftertaste: 1 }, color: '#6b4f2c', cost: 4, brewTime: 180 },
+  { label: 'French Press', value: 'french-press', unit: 'ml', scores: { bitterness: 1, body: 2, aftertaste: 1 }, color: '#533c23', cost: 3, brewTime: 240 },
+  { label: 'Cold Brew', value: 'cold-brew', unit: 'ml', scores: { sweetness: 1, bitterness: -2, acidity: -2, caffeine: 3 }, color: '#4a2c1a', cost: 6, brewTime: 43200 },
 ];
 
 export const milks: IngredientOption[] = [
@@ -292,6 +292,3 @@ export const ingredientCategories = {
   syrup: syrups,
   toppings: toppings,
 };
-
-
-    

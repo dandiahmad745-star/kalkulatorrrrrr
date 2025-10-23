@@ -23,6 +23,7 @@ export interface IngredientOption {
   cost: number; // Cost per ml or g
   brands?: BrandOption[];
   color?: string; // e.g., '#6b4f2c'
+  brewTime?: number; // Default brew time in seconds
 }
 
 export interface Recipe {
@@ -72,6 +73,15 @@ export type GenerateRecipeFromDescriptionOutput = {
   toppingsBrand?: string;
 };
 
+export type GetOptimalBrewTimeInput = {
+  brewingMethod: string;
+  coffeeAmount: number;
+};
+
+export type GetOptimalBrewTimeOutput = {
+  optimalTime: number; // in seconds
+  justification: string;
+};
 
 export const FLAVOR_PROFILE_KEYS: (keyof FlavorProfile)[] = [
   'sweetness',
@@ -92,5 +102,3 @@ export const FLAVOR_PROFILE_CONFIG = {
   aftertaste: { label: 'Aftertaste', color: 'hsl(var(--chart-1))' },
   caffeine: { label: 'Caffeine', color: 'hsl(var(--chart-2))' },
 } as const;
-
-    

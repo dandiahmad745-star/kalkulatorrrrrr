@@ -1,15 +1,14 @@
-
 "use client";
 
 import { useState, useMemo, useTransition, useCallback } from 'react';
-import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, DollarSign, Calculator } from 'lucide-react';
+import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, DollarSign, Calculator, Timer } from 'lucide-react';
 import type { z } from 'genkit';
 
 import type { FlavorProfile, Recipe, IngredientOption, BrandOption, ExperimentResult } from '@/lib/definitions';
 import { ingredientCategories } from '@/lib/ingredients';
 import { FLAVOR_PROFILE_KEYS } from '@/lib/definitions';
 import { capitalize } from '@/lib/utils';
-import { getAIFlavorDescription, getAIExperimentRating } from '@/app/actions';
+import { getAIFlavorDescription, getAIExperimentRating, getAIOptimalBrewTime } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +26,7 @@ import { Progress } from "@/components/ui/progress";
 import CupVisualizer from './cup-visualizer';
 import CostCalculator from './cost-calculator';
 import BaristaMathAssistant from './barista-math-assistant';
+import BrewTimer from './brew-timer';
 
 
 const initialRecipe: Recipe = {
@@ -367,10 +367,11 @@ const CoffeeMixer = () => {
         <Card>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="p-6">
-              <TabsList className="grid h-auto w-full grid-cols-1 md:h-10 md:grid-cols-3">
+              <TabsList className="grid h-auto w-full grid-cols-2 md:h-10 md:grid-cols-4">
                 <TabsTrigger value="profile"><Star className="mr-2"/> Flavor Profile</TabsTrigger>
-                <TabsTrigger value="experiment"><FlaskConical className="mr-2"/> Experiment Mode</TabsTrigger>
+                <TabsTrigger value="experiment"><FlaskConical className="mr-2"/> Experiment</TabsTrigger>
                 <TabsTrigger value="barista-math"><Calculator className="mr-2"/> Barista Math</TabsTrigger>
+                <TabsTrigger value="timer"><Timer className="mr-2"/> Brew Timer</TabsTrigger>
               </TabsList>
             </div>
             
@@ -480,6 +481,16 @@ const CoffeeMixer = () => {
               </CardContent>
             </TabsContent>
 
+            <TabsContent value="timer">
+              <CardHeader className="pt-0">
+                <CardTitle>Brew Timer</CardTitle>
+                <CardDescription>Time your brew to perfection with AI recommendations.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BrewTimer recipe={recipe} />
+              </CardContent>
+            </TabsContent>
+
           </Tabs>
 
           <div className="p-6 pt-0">
@@ -515,5 +526,3 @@ const CoffeeMixer = () => {
 };
 
 export default CoffeeMixer;
-
-    
