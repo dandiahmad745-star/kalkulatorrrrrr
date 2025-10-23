@@ -82,7 +82,7 @@ export const ingredientCategories = {
   roastLevel: roastLevels,
   brewingMethod: brewingMethods,
   milk: milks,
-  creamer,
+  creamer: creamers,
   syrup: syrups,
-  toppings,
+  toppings: toppings,
 };
