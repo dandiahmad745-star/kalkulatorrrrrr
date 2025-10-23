@@ -1,0 +1,71 @@
+'use server';
+
+/**
+ * @fileOverview Rates an experimental coffee recipe.
+ *
+ * - rateExperiment - A function that rates an experimental coffee recipe.
+ * - RateExperimentInput - The input type for the rateExperiment function.
+ * - RateExperimentOutput - The return type for the rateExperiment function.
+ */
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+
+const RateExperimentInputSchema = z.object({
+  coffeeBeans: z.string().describe('The type of coffee beans used in the recipe.'),
+  roastLevel: z.string().describe('The roast level of the coffee beans (e.g., light, medium, dark).'),
+  brewingMethod: z.string().describe('The brewing method used (e.g., espresso, pour over, French press).'),
+  milk: z.string().describe('The type of milk added to the coffee (e.g., whole milk, almond milk, oat milk).'),
+  creamer: z.string().describe('The type of creamer added to the coffee (e.g., vanilla, hazelnut).'),
+  syrup: z.string().describe('The type of syrup added to the coffee (e.g., caramel, chocolate).'),
+  toppings: z.string().describe('The toppings added to the coffee (e.g., whipped cream, chocolate shavings).'),
+});
+export type RateExperimentInput = z.infer<typeof RateExperimentInputSchema>;
+
+const RateExperimentOutputSchema = z.object({
+    realisticTasteDescription: z.string().describe("Deskripsi rasa yang realistis dari resep ini jika dibuat di dunia nyata."),
+    suitableForServing: z.boolean().describe("Apakah kombinasi ini cocok dan layak untuk disajikan di sebuah kafe."),
+    experimentalScore: z.number().min(0).max(100).describe("Skor eksperimental dari 0 hingga 100, menilai kreativitas, keseimbangan, dan potensi resep."),
+    justification: z.string().describe("Penjelasan singkat mengenai skor yang diberikan dan kelayakan resep untuk disajikan."),
+});
+export type RateExperimentOutput = z.infer<typeof RateExperimentOutputSchema>;
+
+export async function rateExperiment(
+  input: RateExperimentInput
+): Promise<RateExperimentOutput> {
+  return rateExperimentFlow(input);
+}
+
+const prompt = ai.definePrompt({
+  name: 'rateExperimentPrompt',
+  input: {schema: RateExperimentInputSchema},
+  output: {schema: RateExperimentOutputSchema},
+  prompt: `Anda adalah seorang juri barista dan ahli peracik kopi. Tugas Anda adalah menilai sebuah resep kopi eksperimental berdasarkan bahan-bahan yang diberikan.
+
+Resep Eksperimental:
+- Biji Kopi: {{{coffeeBeans}}}
+- Tingkat Sangrai: {{{roastLevel}}}
+- Metode Seduh: {{{brewingMethod}}}
+- Susu: {{{milk}}}
+- Krimer: {{{creamer}}}
+- Sirup: {{{syrup}}}
+- Topping: {{{toppings}}}
+
+Berdasarkan resep di atas, berikan penilaian objektif Anda dalam format JSON yang diminta:
+1.  **realisticTasteDescription**: Jelaskan seperti apa kira-kira rasa minuman ini di dunia nyata.
+2.  **suitableForServing**: Berikan penilaian (true/false) apakah resep ini cukup seimbang dan enak untuk disajikan kepada pelanggan di kafe.
+3.  **experimentalScore**: Berikan skor numerik antara 0-100 yang menilai kreativitas, keseimbangan rasa, dan potensi keseluruhan dari resep ini.
+4.  **justification**: Berikan justifikasi singkat untuk skor dan kelayakan penyajian yang Anda berikan. Jelaskan mengapa resep ini berhasil atau gagal.`,
+});
+
+const rateExperimentFlow = ai.defineFlow(
+  {
+    name: 'rateExperimentFlow',
+    inputSchema: RateExperimentInputSchema,
+    outputSchema: RateExperimentOutputSchema,
+  },
+  async input => {
+    const {output} = await prompt(input);
+    return output!;
+  }
+);

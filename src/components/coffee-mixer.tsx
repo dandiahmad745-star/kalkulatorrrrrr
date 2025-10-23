@@ -2,13 +2,13 @@
 "use client";
 
 import { useState, useMemo, useTransition, useEffect } from 'react';
-import { Bot, Lightbulb, Plus, Shuffle, Sparkles } from 'lucide-react';
+import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown } from 'lucide-react';
 
-import type { FlavorProfile, Recipe, IngredientOption, BrandOption } from '@/lib/definitions';
+import type { FlavorProfile, Recipe, IngredientOption, BrandOption, ExperimentResult } from '@/lib/definitions';
 import { ingredientCategories } from '@/lib/ingredients';
 import { FLAVOR_PROFILE_KEYS } from '@/lib/definitions';
 import { capitalize } from '@/lib/utils';
-import { getAIFlavorDescription } from '@/app/actions';
+import { getAIFlavorDescription, getAIExperimentRating } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,9 @@ import { Input } from '@/components/ui/input';
 import FlavorProfileChart from './flavor-profile-chart';
 import RecipeCard from './recipe-card';
 import { SteamingCoffeeIcon } from './icons';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from "@/components/ui/progress"
+
 
 const initialRecipe: Recipe = {
   id: '',
@@ -49,9 +52,11 @@ const CoffeeMixer = () => {
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [flavorDescription, setFlavorDescription] = useState('');
   const [aiSuggestion, setAiSuggestion] = useState('');
+  const [experimentResult, setExperimentResult] = useState<ExperimentResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const [toastInfo, setToastInfo] = useState<{ title: string; description: string } | null>(null);
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('profile');
 
   useEffect(() => {
     if (toastInfo) {
@@ -173,10 +178,7 @@ const CoffeeMixer = () => {
 
   const handleGenerateDescription = () => {
     startTransition(async () => {
-      setFlavorDescription('');
-      setAiSuggestion('');
       const formatIngredient = (name: string, brand?: string) => brand ? `${name} (${brand})` : name;
-      
       const input = {
         coffeeBeans: `${recipe.coffeeBeans} (${recipe.coffeeBeansAmount}g)`,
         roastLevel: recipe.roastLevel,
@@ -186,16 +188,25 @@ const CoffeeMixer = () => {
         syrup: recipe.syrup === 'none' ? 'none' : formatIngredient(`${recipe.syrupAmount}ml ${recipe.syrup}`, recipe.syrupBrand),
         toppings: recipe.toppings === 'none' ? 'none' : formatIngredient(`${recipe.toppingsAmount}g ${recipe.toppings}`, recipe.toppingsBrand),
       };
-      const result = await getAIFlavorDescription(input);
-      if (result.success) {
-        setFlavorDescription(result.data.flavorDescription);
-        setAiSuggestion(result.data.suggestion);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: result.error || 'Could not generate AI description.',
-        });
+
+      if (activeTab === 'profile') {
+        setFlavorDescription('');
+        setAiSuggestion('');
+        const result = await getAIFlavorDescription(input);
+        if (result.success) {
+          setFlavorDescription(result.data.flavorDescription);
+          setAiSuggestion(result.data.suggestion);
+        } else {
+          toast({ variant: 'destructive', title: 'Error', description: result.error || 'Could not generate AI description.' });
+        }
+      } else if (activeTab === 'experiment') {
+        setExperimentResult(null);
+        const result = await getAIExperimentRating(input);
+        if (result.success) {
+          setExperimentResult(result.data);
+        } else {
+          toast({ variant: 'destructive', title: 'Error', description: result.error || 'Could not rate experiment.' });
+        }
       }
     });
   };
@@ -345,50 +356,112 @@ const CoffeeMixer = () => {
       <div className="space-y-8 lg:col-span-2">
         {/* Current Blend */}
         <Card>
-          <CardHeader>
-            <CardTitle>Your Current Blend</CardTitle>
-            <CardDescription>The estimated flavor profile and description of your creation.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <div>
-              <h3 className="mb-4 text-center font-semibold">Flavor Profile</h3>
-              <FlavorProfileChart profile={flavorProfile} />
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <div className="p-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="profile"><Star className="mr-2"/> Flavor Profile</TabsTrigger>
+                <TabsTrigger value="experiment"><FlaskConical className="mr-2"/> Experiment Mode</TabsTrigger>
+              </TabsList>
             </div>
-            <div className="flex flex-col">
-              <h3 className="mb-2 font-semibold">AI Flavor Description</h3>
-              <Card className="flex-grow flex flex-col p-4 bg-secondary/50">
-                {isPending ? (
-                  <div className="m-auto flex flex-col items-center gap-2 text-muted-foreground">
-                    <SteamingCoffeeIcon className="h-12 w-12" />
-                    <span>Brewing description...</span>
-                  </div>
-                ) : flavorDescription ? (
-                  <div className="space-y-4">
-                    <p className="text-sm leading-relaxed">{flavorDescription}</p>
-                    {aiSuggestion && (
-                      <>
-                        <Separator/>
-                        <div className="flex items-start gap-3">
-                           <Lightbulb className="h-5 w-5 mt-0.5 text-primary flex-shrink-0" />
-                          <p className="text-sm text-muted-foreground font-medium">
-                            <span className="font-bold text-foreground">Saran:</span> {aiSuggestion}
-                          </p>
-                        </div>
-                      </>
+            
+            <TabsContent value="profile">
+              <CardHeader className="pt-0">
+                <CardTitle>Your Current Blend</CardTitle>
+                <CardDescription>The estimated flavor profile and description of your creation.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                <div>
+                  <h3 className="mb-4 text-center font-semibold">Flavor Profile</h3>
+                  <FlavorProfileChart profile={flavorProfile} />
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="mb-2 font-semibold">AI Flavor Description</h3>
+                  <Card className="flex-grow flex flex-col p-4 bg-secondary/50">
+                    {isPending && activeTab === 'profile' ? (
+                      <div className="m-auto flex flex-col items-center gap-2 text-muted-foreground">
+                        <SteamingCoffeeIcon className="h-12 w-12" />
+                        <span>Brewing description...</span>
+                      </div>
+                    ) : flavorDescription ? (
+                      <div className="space-y-4">
+                        <p className="text-sm leading-relaxed">{flavorDescription}</p>
+                        {aiSuggestion && (
+                          <>
+                            <Separator/>
+                            <div className="flex items-start gap-3">
+                               <Lightbulb className="h-5 w-5 mt-0.5 text-primary flex-shrink-0" />
+                              <p className="text-sm text-muted-foreground font-medium">
+                                <span className="font-bold text-foreground">Saran:</span> {aiSuggestion}
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="m-auto flex flex-col items-center gap-2 text-center text-muted-foreground">
+                        <Bot className="h-10 w-10" />
+                        <p className="text-sm">Click the button to generate an AI-powered flavor description.</p>
+                      </div>
                     )}
-                  </div>
-                ) : (
-                  <div className="m-auto flex flex-col items-center gap-2 text-center text-muted-foreground">
-                    <Bot className="h-10 w-10" />
-                    <p className="text-sm">Click the button to generate an AI-powered flavor description.</p>
-                  </div>
-                )}
-              </Card>
-              <Button onClick={handleGenerateDescription} disabled={isPending} className="mt-4 w-full">
-                <Sparkles /> Generate with AI
-              </Button>
-            </div>
-          </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </TabsContent>
+            
+            <TabsContent value="experiment">
+               <CardHeader className="pt-0">
+                <CardTitle>Experiment Mode</CardTitle>
+                <CardDescription>Let the AI rate your experimental creation!</CardDescription>
+              </CardHeader>
+              <CardContent>
+                 <Card className="flex-grow flex flex-col p-4 bg-secondary/50 min-h-[300px]">
+                    {isPending && activeTab === 'experiment' ? (
+                      <div className="m-auto flex flex-col items-center gap-2 text-muted-foreground">
+                        <SteamingCoffeeIcon className="h-12 w-12" />
+                        <span>Rating experiment...</span>
+                      </div>
+                    ) : experimentResult ? (
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Experimental Score</Label>
+                          <div className="flex items-center gap-2">
+                             <Progress value={experimentResult.experimentalScore} className="w-[60%]" />
+                             <span className="font-bold text-lg">{experimentResult.experimentalScore}/100</span>
+                          </div>
+                        </div>
+                        <div>
+                           <Label>Suitability for Serving</Label>
+                           <div className={`flex items-center gap-2 font-bold ${experimentResult.suitableForServing ? 'text-green-600' : 'text-red-600'}`}>
+                              {experimentResult.suitableForServing ? <ThumbsUp/> : <ThumbsDown/>}
+                              <span>{experimentResult.suitableForServing ? 'Recommended' : 'Not Recommended'}</span>
+                           </div>
+                        </div>
+                         <Separator/>
+                        <div>
+                          <Label>Realistic Taste</Label>
+                          <p className="text-sm leading-relaxed">{experimentResult.realisticTasteDescription}</p>
+                        </div>
+                        <div>
+                          <Label>Justification</Label>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{experimentResult.justification}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="m-auto flex flex-col items-center gap-2 text-center text-muted-foreground">
+                        <FlaskConical className="h-10 w-10" />
+                        <p className="text-sm">Mix your ingredients, then click the button below to get an AI rating.</p>
+                      </div>
+                    )}
+                  </Card>
+              </CardContent>
+            </TabsContent>
+          </Tabs>
+
+          <div className="p-6 pt-0">
+            <Button onClick={handleGenerateDescription} disabled={isPending} className="w-full">
+              <Sparkles /> Generate with AI
+            </Button>
+          </div>
         </Card>
 
         {/* Saved Recipes */}

@@ -44,6 +44,14 @@ export interface Recipe {
   toppingsBrand?: string;
 }
 
+export interface ExperimentResult {
+  realisticTasteDescription: string;
+  suitableForServing: boolean;
+  experimentalScore: number;
+  justification: string;
+}
+
+
 export const FLAVOR_PROFILE_KEYS: (keyof FlavorProfile)[] = [
   'sweetness',
   'bitterness',
