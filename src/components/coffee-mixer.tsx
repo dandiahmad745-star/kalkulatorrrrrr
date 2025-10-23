@@ -46,25 +46,39 @@ const CoffeeMixer = () => {
     setRecipe((prev) => {
       const newRecipe = { ...prev, [category]: value };
 
-      const resetBrandAndSetDefault = (
-        ingredientKey: keyof Recipe, 
-        brandKey: keyof Recipe, 
+      const syncBrand = (
+        ingredientKey: keyof typeof ingredientCategories,
+        brandKey: keyof Recipe,
         ingredientOptions: IngredientOption[]
       ) => {
+        // If we are changing the main ingredient (e.g. milk flavor)
         if (category === ingredientKey) {
-          if (value === 'none') {
+          const selectedIngredient = ingredientOptions.find(i => i.value === value);
+          
+          if (value === 'none' || !selectedIngredient?.brands) {
             newRecipe[brandKey] = undefined;
           } else {
-            const selectedIngredient = ingredientOptions.find(i => i.value === value);
-            newRecipe[brandKey] = selectedIngredient?.brands?.[0]?.value;
+            const currentBrand = newRecipe[brandKey] as string | undefined;
+            const isBrandCompatible = selectedIngredient.brands.some(b => b.value === currentBrand);
+
+            if (!isBrandCompatible) {
+              const defaultBrand = selectedIngredient.brands[0]?.value;
+              newRecipe[brandKey] = defaultBrand;
+              if(currentBrand) {
+                toast({
+                  title: 'Merek Disesuaikan',
+                  description: `Merek sebelumnya tidak tersedia untuk rasa ini, dialihkan ke ${capitalize(defaultBrand || '')}.`,
+                });
+              }
+            }
           }
         }
       };
       
-      resetBrandAndSetDefault('milk', 'milkBrand', ingredientCategories.milk);
-      resetBrandAndSetDefault('creamer', 'creamerBrand', ingredientCategories.creamer);
-      resetBrandAndSetDefault('syrup', 'syrupBrand', ingredientCategories.syrup);
-      resetBrandAndSetDefault('toppings', 'toppingsBrand', ingredientCategories.toppings);
+      syncBrand('milk', 'milkBrand', ingredientCategories.milk);
+      syncBrand('creamer', 'creamerBrand', ingredientCategories.creamer);
+      syncBrand('syrup', 'syrupBrand', ingredientCategories.syrup);
+      syncBrand('toppings', 'toppingsBrand', ingredientCategories.toppings);
 
       return newRecipe;
     });
@@ -178,7 +192,7 @@ const CoffeeMixer = () => {
           <Label className="text-sm text-muted-foreground">{label}</Label>
           <Select
             value={recipe[brandKey] as string || ''}
-            onValueChange={(value) => handleIngredientChange(brandKey, value)}
+            onValueChange={(value) => setRecipe(prev => ({...prev, [brandKey]: value}))}
           >
             <SelectTrigger>
               <SelectValue placeholder={`Select ${label}`} />
