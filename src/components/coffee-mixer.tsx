@@ -60,7 +60,7 @@ const CoffeeMixer = () => {
 
   useEffect(() => {
     if (toastInfo) {
-      toast(toastInfo);
+      toast({title: toastInfo.title, description: toastInfo.description});
       setToastInfo(null);
     }
   }, [toastInfo, toast]);
@@ -178,15 +178,27 @@ const CoffeeMixer = () => {
 
   const handleGenerateDescription = () => {
     startTransition(async () => {
-      const formatIngredient = (name: string, brand?: string) => brand ? `${name} (${brand})` : name;
+      const formatIngredient = (key: keyof Recipe, name: string, brand?: string) => {
+        const amountKey = `${key}Amount` as keyof Recipe;
+        const amount = recipe[amountKey];
+        const unit = ingredientCategories[key as keyof typeof ingredientCategories]?.find(o => o.value === name)?.unit;
+        if (name === 'none') return 'none';
+        
+        let formatted = `${amount}${unit} ${name}`;
+        if (brand) {
+          formatted += ` (${brand})`;
+        }
+        return formatted;
+      };
+
       const input = {
-        coffeeBeans: `${recipe.coffeeBeans} (${recipe.coffeeBeansAmount}g)`,
+        coffeeBeans: formatIngredient('coffeeBeans', recipe.coffeeBeans),
         roastLevel: recipe.roastLevel,
-        brewingMethod: `${recipe.brewingMethod} (${recipe.brewingMethodAmount}ml)`,
-        milk: recipe.milk === 'none' ? 'none' : formatIngredient(`${recipe.milkAmount}ml ${recipe.milk}`, recipe.milkBrand),
-        creamer: recipe.creamer === 'none' ? 'none' : formatIngredient(`${recipe.creamerAmount}ml ${recipe.creamer}`, recipe.creamerBrand),
-        syrup: recipe.syrup === 'none' ? 'none' : formatIngredient(`${recipe.syrupAmount}ml ${recipe.syrup}`, recipe.syrupBrand),
-        toppings: recipe.toppings === 'none' ? 'none' : formatIngredient(`${recipe.toppingsAmount}g ${recipe.toppings}`, recipe.toppingsBrand),
+        brewingMethod: formatIngredient('brewingMethod', recipe.brewingMethod),
+        milk: formatIngredient('milk', recipe.milk, recipe.milkBrand),
+        creamer: formatIngredient('creamer', recipe.creamer, recipe.creamerBrand),
+        syrup: formatIngredient('syrup', recipe.syrup, recipe.syrupBrand),
+        toppings: formatIngredient('toppings', recipe.toppings, recipe.toppingsBrand),
       };
 
       if (activeTab === 'profile') {
@@ -205,7 +217,7 @@ const CoffeeMixer = () => {
         if (result.success) {
           setExperimentResult(result.data);
         } else {
-          toast({ variant: 'destructive', title: 'Error', description: result.error || 'Could not rate experiment.' });
+          toast({ variant: 'destructive', title: 'Error', description: result.error || 'Failed to generate experiment rating.' });
         }
       }
     });
@@ -223,9 +235,11 @@ const CoffeeMixer = () => {
       (Object.keys(ingredientCategories) as (keyof typeof ingredientCategories)[]).forEach(cat => {
         const selectedValue = recipe[cat as keyof Recipe] as string;
         const amount = recipe[`${cat}Amount` as keyof Recipe] as number || 0;
-        const multiplier = amount / STANDARD_UNIT;
-
+        
         const option = ingredientCategories[cat].find(o => o.value === selectedValue);
+        const unit = option?.unit;
+        const multiplier = amount / (unit === 'g' ? 10 : 15);
+
         if (option?.scores[key]) {
           score += (option.scores[key]! * multiplier);
         }
@@ -488,3 +502,5 @@ const CoffeeMixer = () => {
 };
 
 export default CoffeeMixer;
+
+    
