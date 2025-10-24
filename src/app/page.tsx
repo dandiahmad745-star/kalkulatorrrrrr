@@ -1,6 +1,7 @@
 import CoffeeMixer from '@/components/coffee-mixer';
 import CafeModeToggle from '@/components/cafe-mode-toggle';
 import { Coffee } from 'lucide-react';
+import TeamSection from '@/components/team-section';
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
       </header>
       <main className="container mx-auto flex-1 p-4 md:p-8">
         <CoffeeMixer />
+        <TeamSection />
       </main>
       <footer className="container mx-auto mt-auto py-6 px-4 text-center text-sm text-muted-foreground">
         <p>
