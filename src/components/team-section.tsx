@@ -39,7 +39,7 @@ const teamMembers = [
     name: 'Sinta',
     title: 'Ahli Bisnis & Operasional Café',
     description: 'Sinta membawa perspektif dunia nyata café ke dalam proyek ini. Ia mengatur agar sistem dapat menghitung biaya produksi, profit margin, dan efisiensi bahan baku layaknya sistem manajemen café profesional. Setiap perhitungan dirancang agar bisa diterapkan langsung di dunia usaha kopi.',
-    avatar: 'https://i.pravatar.cc/150?u=sinta',
+    avatar: 'https://i.imgur.com/9zipeEP.jpeg',
     icon: '📊',
   },
   {
