@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition, useCallback } from 'react';
-import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, Calculator, Timer } from 'lucide-react';
+import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, Calculator, Timer, Thermometer } from 'lucide-react';
 import type { z } from 'genkit';
 
 import type { FlavorProfile, Recipe, IngredientOption, BrandOption, ExperimentResult } from '@/lib/definitions';
@@ -27,6 +27,7 @@ import CupVisualizer from './cup-visualizer';
 import CostCalculator from './cost-calculator';
 import BaristaMathAssistant from './barista-math-assistant';
 import BrewTimer from './brew-timer';
+import TemperatureCurve from './temperature-curve';
 
 
 const initialRecipe: Recipe = {
@@ -432,9 +433,10 @@ const CoffeeMixer = () => {
         <Card>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="p-6">
-              <TabsList className="grid h-auto w-full grid-cols-1 sm:grid-cols-2 md:h-10 md:grid-cols-4">
+              <TabsList className="grid h-auto w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-5 md:h-10">
                 <TabsTrigger value="profile"><Star className="mr-2"/> Flavor Profile</TabsTrigger>
                 <TabsTrigger value="experiment"><FlaskConical className="mr-2"/> Experiment</TabsTrigger>
+                <TabsTrigger value="temp-curve"><Thermometer className="mr-2"/> Kurva Suhu</TabsTrigger>
                 <TabsTrigger value="barista-math"><Calculator className="mr-2"/> Barista Math</TabsTrigger>
                 <TabsTrigger value="timer"><Timer className="mr-2"/> Brew Timer</TabsTrigger>
               </TabsList>
@@ -453,7 +455,7 @@ const CoffeeMixer = () => {
               <CardContent className="grid grid-cols-1 gap-8 md:grid-cols-5">
                 <div className="md:col-span-2">
                   <h3 className="mb-4 text-center font-semibold">Cup Visualizer</h3>
-                  <CupVisualizer recipe={recipe} />
+                  <CupVisualizer recipe={recipe} flavorProfile={flavorProfile}/>
                 </div>
                 <div className="md:col-span-3">
                   <h3 className="mb-4 text-center font-semibold">Flavor Profile</h3>
@@ -538,6 +540,16 @@ const CoffeeMixer = () => {
                       </div>
                     )}
                   </Card>
+              </CardContent>
+            </TabsContent>
+
+            <TabsContent value="temp-curve">
+              <CardHeader className="pt-0">
+                <CardTitle>Simulasi Kurva Suhu</CardTitle>
+                <CardDescription>Amati bagaimana profil rasa berubah saat kopi mendingin.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TemperatureCurve flavorProfile={flavorProfile} />
               </CardContent>
             </TabsContent>
 

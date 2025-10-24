@@ -2,16 +2,17 @@
 'use client';
 
 import * as React from 'react';
-import type { Recipe } from '@/lib/definitions';
+import type { Recipe, FlavorProfile } from '@/lib/definitions';
 import { ingredientCategories } from '@/lib/ingredients';
 
 interface CupVisualizerProps {
   recipe: Recipe;
+  flavorProfile: FlavorProfile;
 }
 
 const MAX_VOLUME = 250; // Max volume of the cup in ml
 
-const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
+const CupVisualizer = ({ recipe, flavorProfile }: CupVisualizerProps) => {
   const [isClient, setIsClient] = React.useState(false);
   const [bubbleAnims, setBubbleAnims] = React.useState<any[]>([]);
 
@@ -36,12 +37,12 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
   };
 
   const layers = [
-    { color: getIngredientColor('brewingMethod', recipe.brewingMethod), amount: recipe.brewingMethodAmount },
-    { color: getIngredientColor('syrup', recipe.syrup), amount: recipe.syrupAmount },
-    { color: getIngredientColor('sweetener', recipe.sweetener), amount: recipe.sweetenerAmount },
-    { color: getIngredientColor('milk', recipe.milk), amount: recipe.milkAmount },
-    { color: getIngredientColor('creamer', recipe.creamer), amount: recipe.creamerAmount },
-  ].filter(l => l.amount > 0 && l.color !== 'transparent');
+    { name: 'brewingMethod', color: getIngredientColor('brewingMethod', recipe.brewingMethod), amount: recipe.brewingMethodAmount },
+    { name: 'syrup', color: getIngredientColor('syrup', recipe.syrup), amount: recipe.syrupAmount },
+    { name: 'sweetener', color: getIngredientColor('sweetener', recipe.sweetener), amount: recipe.sweetenerAmount },
+    { name: 'milk', color: getIngredientColor('milk', recipe.milk), amount: recipe.milkAmount },
+    { name: 'creamer', color: getIngredientColor('creamer', recipe.creamer), amount: recipe.creamerAmount },
+  ].filter(l => l.amount > 0 && l.color !== 'transparent' && l.name !== 'sweetener'); // Sweetener is often solid, doesn't contribute to volume color much
 
   const topping = {
     color: getIngredientColor('toppings', recipe.toppings),
@@ -54,30 +55,47 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
     if (colors.length === 0) return '#e0e0e0';
     if (colors.length === 1) return colors[0].color;
     let totalAmount = 0;
-    let r = 0, g = 0, b = 0;
+    let r = 0, g = 0, b = 0, a = 0;
+
     colors.forEach(({ color, amount }) => {
       const hex = color.replace('#', '');
-      if (hex.length < 6) return;
+      const isHexWithAlpha = hex.length === 8;
+      const isHex = hex.length === 6 || isHexWithAlpha;
+      if (!isHex) return;
+
       const layerR = parseInt(hex.substring(0, 2), 16);
       const layerG = parseInt(hex.substring(2, 4), 16);
       const layerB = parseInt(hex.substring(4, 6), 16);
+
       totalAmount += amount;
       r += layerR * amount;
       g += layerG * amount;
       b += layerB * amount;
     });
+
     if (totalAmount === 0) return '#e0e0e0';
+
     r = Math.round(r / totalAmount);
     g = Math.round(g / totalAmount);
     b = Math.round(b / totalAmount);
+
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   };
+
 
   const finalColor = blendColors(layers);
   const fillPercentage = Math.min(100, (totalLiquidAmount / MAX_VOLUME) * 100);
   const liquidHeight = 175 * (fillPercentage / 100);
   const liquidTopY = 180 - liquidHeight;
 
+  // Texture Simulator Logic
+  const bodyScore = flavorProfile.body || 0;
+  // Normalize body score to a range (e.g., 0 to 1). Let's assume max body is ~15.
+  const viscosity = Math.min(1, bodyScore / 15);
+  // Low viscosity (thin) = high frequency, high scale. High viscosity (thick) = low frequency, low scale.
+  const wobbleFrequency = 0.02 + (1 - viscosity) * 0.05; // range from 0.02 to 0.07
+  const wobbleScale = 1 + (1 - viscosity) * 4; // range from 1 to 5
+  
   const hasWhippedCream = recipe.toppings === 'whipped-cream';
   const hasDrizzle = recipe.toppings === 'caramel-drizzle';
   const hasShavings = recipe.toppings === 'chocolate-shavings' || recipe.toppings === 'cinnamon';
@@ -94,10 +112,10 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
             <path d="M22,5 H128 L114,178 Q110,193 75,193 T36,178 L22,5 Z" />
           </clipPath>
           <filter id="liquidWobble">
-            <feTurbulence type="fractalNoise" baseFrequency="0.02 0.1" numOctaves="1" result="warp">
-               <animate attributeName="baseFrequency" values="0.02 0.1;0.02 0.12;0.02 0.1" dur="2s" repeatCount="indefinite"/>
+            <feTurbulence type="fractalNoise" baseFrequency={`${wobbleFrequency} 0.1`} numOctaves="1" result="warp">
+               <animate attributeName="baseFrequency" values={`${wobbleFrequency} 0.1;${wobbleFrequency} 0.12;${wobbleFrequency} 0.1`} dur="2s" repeatCount="indefinite"/>
             </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" in2="warp" scale="3" xChannelSelector="R" yChannelSelector="G" />
+            <feDisplacementMap in="SourceGraphic" in2="warp" scale={wobbleScale} xChannelSelector="R" yChannelSelector="G" />
           </filter>
            <linearGradient id="cupShine" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="white" stopOpacity="0.6"/>
@@ -241,5 +259,3 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
 };
 
 export default CupVisualizer;
-
-    
