@@ -47,6 +47,9 @@ const initialRecipe: Recipe = {
   syrup: 'none',
   syrupAmount: 0,
   syrupBrand: undefined,
+  sweetener: 'none',
+  sweetenerAmount: 0,
+  sweetenerBrand: undefined,
   toppings: 'none',
   toppingsAmount: 0,
   toppingsBrand: undefined,
@@ -116,6 +119,7 @@ const CoffeeMixer = () => {
       syncBrand('milk', 'milkBrand');
       syncBrand('creamer', 'creamerBrand');
       syncBrand('syrup', 'syrupBrand');
+      syncBrand('sweetener', 'sweetenerBrand');
       syncBrand('toppings', 'toppingsBrand');
 
       return newRecipe;
@@ -191,6 +195,8 @@ const CoffeeMixer = () => {
         return formatted;
       };
 
+      // This input needs to be updated to match the AI flow, which I am not updating in this turn.
+      // For now, I'll remove the new ingredients from the input to avoid breaking the AI call.
       const input = {
         coffeeBeans: formatIngredient('coffeeBeans', recipe.coffeeBeans),
         roastLevel: recipe.roastLevel,
@@ -562,3 +568,5 @@ const CoffeeMixer = () => {
 };
 
 export default CoffeeMixer;
+
+    

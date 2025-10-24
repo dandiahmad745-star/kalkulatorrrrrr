@@ -13,10 +13,22 @@ const MAX_VOLUME = 250; // Max volume of the cup in ml
 
 const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
   const [isClient, setIsClient] = React.useState(false);
+  const [bubbleAnims, setBubbleAnims] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     setIsClient(true);
   }, []);
+
+  React.useEffect(() => {
+    const newBubbleAnims = [...Array(5)].map(() => ({
+      cx: 30 + Math.random() * 90,
+      r: Math.random() * 2 + 1,
+      dur: Math.random() * 1.5 + 1,
+      opacityDur: Math.random() * 1.5 + 1,
+    }));
+    setBubbleAnims(newBubbleAnims);
+  }, [recipe]);
+
   
   const getIngredientColor = (category: keyof typeof ingredientCategories, value: string): string => {
     const ingredient = ingredientCategories[category]?.find(i => i.value === value);
@@ -26,6 +38,7 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
   const layers = [
     { color: getIngredientColor('brewingMethod', recipe.brewingMethod), amount: recipe.brewingMethodAmount },
     { color: getIngredientColor('syrup', recipe.syrup), amount: recipe.syrupAmount },
+    { color: getIngredientColor('sweetener', recipe.sweetener), amount: recipe.sweetenerAmount },
     { color: getIngredientColor('milk', recipe.milk), amount: recipe.milkAmount },
     { color: getIngredientColor('creamer', recipe.creamer), amount: recipe.creamerAmount },
   ].filter(l => l.amount > 0 && l.color !== 'transparent');
@@ -44,6 +57,7 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
     let r = 0, g = 0, b = 0;
     colors.forEach(({ color, amount }) => {
       const hex = color.replace('#', '');
+      if (hex.length < 6) return;
       const layerR = parseInt(hex.substring(0, 2), 16);
       const layerG = parseInt(hex.substring(2, 4), 16);
       const layerB = parseInt(hex.substring(4, 6), 16);
@@ -120,17 +134,17 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
           {fillPercentage > 0 && isClient && (
             <>
               {/* Animated Bubbles */}
-              {[...Array(5)].map((_, i) => (
+              {bubbleAnims.map((anim, i) => (
                 <circle 
                   key={i}
-                  cx={30 + Math.random() * 90} 
+                  cx={anim.cx} 
                   cy={185}
-                  r={Math.random() * 2 + 1}
+                  r={anim.r}
                   fill={finalColor}
                   opacity="0.3"
                 >
-                  <animate attributeName="cy" from="185" to={liquidTopY + 10} dur={`${Math.random() * 1.5 + 1}s`} begin={`${i * 0.2}s`} repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="0.3" to="0" dur={`${Math.random() * 1.5 + 1}s`} begin={`${i * 0.2}s`} repeatCount="indefinite" />
+                  <animate attributeName="cy" from="185" to={liquidTopY + 10} dur={`${anim.dur}s`} begin={`${i * 0.2}s`} repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="0.3" to="0" dur={`${anim.opacityDur}s`} begin={`${i * 0.2}s`} repeatCount="indefinite" />
                 </circle>
               ))}
 
@@ -227,3 +241,5 @@ const CupVisualizer = ({ recipe }: CupVisualizerProps) => {
 };
 
 export default CupVisualizer;
+
+    

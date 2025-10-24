@@ -44,6 +44,9 @@ export interface Recipe {
   syrup: string;
   syrupAmount: number;
   syrupBrand?: string;
+  sweetener: string;
+  sweetenerAmount: number;
+  sweetenerBrand?: string;
   toppings: string;
   toppingsAmount: number;
   toppingsBrand?: string;
@@ -103,3 +106,5 @@ export const FLAVOR_PROFILE_CONFIG = {
   aftertaste: { label: 'Aftertaste', color: 'hsl(var(--chart-1))' },
   caffeine: { label: 'Caffeine', color: 'hsl(var(--chart-2))' },
 } as const;
+
+    

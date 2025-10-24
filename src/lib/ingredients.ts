@@ -302,6 +302,17 @@ export const syrups: IngredientOption[] = [
   { label: 'Espresso Roast', value: 'espresso-roast-syrup', unit: 'ml', scores: { sweetness: 1, bitterness: 4, body: 2, aroma: 4 }, brands: syrupBrands, color: '#2a1a12', cost: 130 },
 ];
 
+export const sweeteners: IngredientOption[] = [
+  { label: 'None', value: 'none', unit: 'g', scores: {}, color: 'transparent', cost: 0 },
+  { label: 'Gula Pasir', value: 'gula-pasir', unit: 'g', scores: { sweetness: 2 }, color: '#fafafa', cost: 1 },
+  { label: 'Gula Aren Cair', value: 'gula-aren-cair', unit: 'ml', scores: { sweetness: 3, aftertaste: 1, aroma: 1 }, color: '#83543b', cost: 15 },
+  { label: 'Gula Merah Cair', value: 'gula-merah-cair', unit: 'ml', scores: { sweetness: 2, aftertaste: 1 }, color: '#a05c43', cost: 12 },
+  { label: 'Brown Sugar', value: 'brown-sugar', unit: 'g', scores: { sweetness: 3 }, color: '#b5651d', cost: 3 },
+  { label: 'Madu (Honey)', value: 'honey', unit: 'ml', scores: { sweetness: 3, aroma: 1, aftertaste: 1 }, color: '#f6bb42', cost: 25 },
+  { label: 'Simple Syrup', value: 'simple-syrup', unit: 'ml', scores: { sweetness: 2 }, color: '#f0f8ff', cost: 5 },
+  { label: 'Stevia', value: 'stevia', unit: 'g', scores: { sweetness: 4, aftertaste: -1 }, color: '#f5fcf5', cost: 50 },
+];
+
 export const toppings: IngredientOption[] = [
   { label: 'None', value: 'none', unit: 'g', scores: {}, color: 'transparent', cost: 0 },
   { label: 'Whipped Cream', value: 'whipped-cream', unit: 'g', scores: { sweetness: 2, body: 1 }, color: '#f7f7f7', cost: 100 },
@@ -330,6 +341,11 @@ export const toppings: IngredientOption[] = [
         { label: 'Ghirardelli', value: 'ghirardelli-drizzle', scores: { aftertaste: 1 }, cost: 140 },
     ]
   },
+  { label: 'Ice Cube', value: 'ice-cube', unit: 'g', scores: {}, color: '#e0f2fe', cost: 1 },
+  { label: 'Chocolate Powder', value: 'chocolate-powder', unit: 'g', scores: { sweetness: 1, bitterness: 1 }, color: '#5b3a29', cost: 60 },
+  { label: 'Cocoa Nibs', value: 'cocoa-nibs', unit: 'g', scores: { bitterness: 2, aroma: 1 }, color: '#3e2712', cost: 200 },
+  { label: 'Vanilla Bean', value: 'vanilla-bean', unit: 'g', scores: { aroma: 3 }, color: '#2b2118', cost: 1000 },
+  { label: 'Sea Salt Flakes', value: 'sea-salt-flakes', unit: 'g', scores: { aftertaste: 1 }, color: '#f8fafc', cost: 80 },
 ];
 
 export const ingredientCategories = {
@@ -339,5 +355,8 @@ export const ingredientCategories = {
   milk: milks,
   creamer: creamers,
   syrup: syrups,
+  sweetener: sweeteners,
   toppings: toppings,
 };
+
+    
