@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo, useTransition, useCallback } from 'react';
+import { useState, useMemo, useTransition, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, Calculator, Timer, Thermometer } from 'lucide-react';
 import type { z } from 'genkit';
 
-import type { FlavorProfile, Recipe, IngredientOption, BrandOption, ExperimentResult } from '@/lib/definitions';
+import type { FlavorProfile, Recipe, IngredientOption, BrandOption, ExperimentResult, TastePreference } from '@/lib/definitions';
 import { ingredientCategories, type IngredientCost } from '@/lib/ingredients';
 import { FLAVOR_PROFILE_KEYS } from '@/lib/definitions';
 import { capitalize } from '@/lib/utils';
@@ -28,7 +28,6 @@ import CostCalculator from './cost-calculator';
 import BaristaMathAssistant from './barista-math-assistant';
 import BrewTimer from './brew-timer';
 import TemperatureCurve from './temperature-curve';
-
 
 const initialRecipe: Recipe = {
   id: '',
@@ -71,8 +70,12 @@ const getDefaultCosts = (): IngredientCost => {
   return costs;
 };
 
+interface CoffeeMixerProps {
+  initialTastePreference: TastePreference | null;
+}
 
-const CoffeeMixer = () => {
+const CoffeeMixer = forwardRef<{ randomize: (pref: TastePreference) => void }, CoffeeMixerProps>(
+  ({ initialTastePreference }, ref) => {
   const [recipe, setRecipe] = useState<Recipe>(initialRecipe);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [flavorDescription, setFlavorDescription] = useState('');
@@ -144,32 +147,97 @@ const CoffeeMixer = () => {
     });
   };
 
-  const handleRandomize = () => {
+  const handleRandomize = (preference: TastePreference | null = null) => {
     const randomRecipe: Partial<Recipe> = {};
-    (Object.keys(ingredientCategories) as (keyof typeof ingredientCategories)[]).forEach((key) => {
-      const options = ingredientCategories[key];
-      const randomOption = options[Math.floor(Math.random() * options.length)];
-      randomRecipe[key as keyof Recipe] = randomOption.value;
-      
-      const amountKey = `${key}Amount` as keyof Recipe;
-      if (randomOption.value === 'none') {
-        randomRecipe[amountKey] = 0;
-      } else {
-        randomRecipe[amountKey] = Math.floor(Math.random() * (randomOption.unit === 'g' ? 20 : 30)) + 5;
-      }
 
-      const brandKey = `${key}Brand` as keyof Recipe;
-      if (randomOption.value !== 'none' && randomOption.brands && randomOption.brands.length > 0) {
-        const randomBrand = randomOption.brands[Math.floor(Math.random() * randomOption.brands.length)];
-        randomRecipe[brandKey] = randomBrand.value;
-      } else {
-        randomRecipe[brandKey] = undefined;
-      }
+    const getWeightedRandom = (options: IngredientOption[], scoreKey: keyof FlavorProfile) => {
+        const weightedOptions = options.flatMap(option => {
+            if (option.value === 'none') return []; // Don't pick 'none' for preferred taste
+            const weight = Math.max(1, (option.scores[scoreKey] || 0) * 2);
+            return Array(Math.floor(weight)).fill(option);
+        });
+        const finalOptions = weightedOptions.length > 0 ? weightedOptions : options.filter(o => o.value !== 'none');
+        return finalOptions[Math.floor(Math.random() * finalOptions.length)];
+    };
+
+
+    (Object.keys(ingredientCategories) as (keyof typeof ingredientCategories)[]).forEach((key) => {
+        const options = ingredientCategories[key];
+        let randomOption: IngredientOption;
+
+        if (preference) {
+            switch (preference.key) {
+                case 'sweetness':
+                    if (key === 'syrup' || key === 'sweetener') {
+                        randomOption = getWeightedRandom(options, 'sweetness');
+                    } else {
+                        randomOption = options[Math.floor(Math.random() * options.length)];
+                    }
+                    break;
+                case 'bitterness':
+                     if (key === 'coffeeBeans') {
+                        randomOption = getWeightedRandom(options, 'bitterness');
+                    } else if (key === 'roastLevel') {
+                        randomOption = ingredientCategories.roastLevel.find(r => r.value === 'dark')!;
+                    } else {
+                        randomOption = options[Math.floor(Math.random() * options.length)];
+                    }
+                    break;
+                case 'body': // Creamy
+                    if (key === 'milk' || key === 'creamer') {
+                         randomOption = getWeightedRandom(options, 'body');
+                    } else {
+                        randomOption = options[Math.floor(Math.random() * options.length)];
+                    }
+                    break;
+                 case 'acidity': // Fruity
+                    if (key === 'coffeeBeans' || key === 'roastLevel' || key === 'syrup') {
+                         randomOption = getWeightedRandom(options, 'acidity');
+                    } else {
+                        randomOption = options[Math.floor(Math.random() * options.length)];
+                    }
+                    break;
+                case 'aroma': // Nutty / Aroma
+                    if (key === 'syrup' || key === 'creamer') {
+                        randomOption = getWeightedRandom(options, 'aroma');
+                    } else {
+                        randomOption = options[Math.floor(Math.random() * options.length)];
+                    }
+                    break;
+                default:
+                    randomOption = options[Math.floor(Math.random() * options.length)];
+            }
+        } else {
+            randomOption = options[Math.floor(Math.random() * options.length)];
+        }
+        
+        if(!randomOption) randomOption = options[Math.floor(Math.random() * options.length)];
+
+        randomRecipe[key as keyof Recipe] = randomOption.value;
+        
+        const amountKey = `${key}Amount` as keyof Recipe;
+        if (randomOption.value === 'none') {
+            randomRecipe[amountKey] = 0;
+        } else {
+            randomRecipe[amountKey] = Math.floor(Math.random() * (randomOption.unit === 'g' ? 20 : 30)) + 5;
+        }
+
+        const brandKey = `${key}Brand` as keyof Recipe;
+        if (randomOption.value !== 'none' && randomOption.brands && randomOption.brands.length > 0) {
+            const randomBrand = randomOption.brands[Math.floor(Math.random() * randomOption.brands.length)];
+            randomRecipe[brandKey] = randomBrand.value;
+        } else {
+            randomRecipe[brandKey] = undefined;
+        }
     });
 
     setRecipe(prev => ({ ...prev, ...randomRecipe as Recipe, id: '', name: 'Your Current Blend' }));
-    toast({ title: 'Random Recipe Generated!', description: 'A new concoction is ready for you.' });
+    toast({ title: preference ? `Recipe for "${preference.label}" Generated!` : 'Random Recipe Generated!', description: 'A new concoction is ready for you.' });
   };
+  
+  useImperativeHandle(ref, () => ({
+    randomize: handleRandomize
+  }));
 
 
   const handleSaveRecipe = () => {
@@ -411,7 +479,7 @@ const CoffeeMixer = () => {
             {(Object.keys(ingredientCategories) as (keyof typeof ingredientCategories)[]).map((key) => renderIngredientSelector(key))}
             <Separator />
             <div className="flex flex-wrap gap-2">
-              <Button onClick={handleRandomize} variant="secondary" className="flex-1">
+              <Button onClick={() => handleRandomize(null)} variant="secondary" className="flex-1">
                 <Shuffle /> Randomize
               </Button>
               <Button onClick={handleSaveRecipe} className="flex-1">
@@ -605,8 +673,7 @@ const CoffeeMixer = () => {
       </div>
     </div>
   );
-};
+});
+CoffeeMixer.displayName = 'CoffeeMixer';
 
 export default CoffeeMixer;
-
-    

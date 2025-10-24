@@ -8,6 +8,13 @@ export type FlavorProfile = {
   caffeine: number;
 };
 
+export type TastePreference = {
+    key: keyof FlavorProfile | 'random';
+    label: string;
+    icon: string;
+    description: string;
+}
+
 export interface BrandOption {
   label: string;
   value: string;
@@ -106,6 +113,3 @@ export const FLAVOR_PROFILE_CONFIG = {
   aftertaste: { label: 'Aftertaste', color: 'hsl(var(--chart-1))' },
   caffeine: { label: 'Caffeine', color: 'hsl(var(--chart-2))' },
 } as const;
-
-    
-    
