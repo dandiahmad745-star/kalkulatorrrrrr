@@ -2,37 +2,36 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from './ui/separator';
 
 const teamMembers = [
   {
     name: 'Arul Faathir',
-    role: 'Lead Designer & Visionary',
+    role: 'Sang Pendesain',
     avatar: 'https://i.pravatar.cc/150?u=arul',
   },
   {
     name: 'Baskara Putra',
-    role: 'Lead Backend Engineer',
+    role: 'Sang Pengkoding',
     avatar: 'https://i.pravatar.cc/150?u=baskara',
   },
   {
     name: 'Kirana Larasati',
-    role: 'AI & Machine Learning Specialist',
+    role: 'Sang Peracik AI',
     avatar: 'https://i.pravatar.cc/150?u=kirana',
   },
   {
     name: 'Sanjaya Adi',
-    role: 'Frontend Developer',
+    role: 'Sang Penata Tampilan',
     avatar: 'https://i.pravatar.cc/150?u=sanjaya',
   },
   {
     name: 'Dewi Lestari',
-    role: 'Coffee Science Consultant',
+    role: 'Sang Peneliti Rasa',
     avatar: 'https://i.pravatar.cc/150?u=dewi',
   },
   {
     name: 'Rizky Ananda',
-    role: 'UI/UX Researcher',
+    role: 'Sang Penghitung Biaya',
     avatar: 'https://i.pravatar.cc/150?u=rizky',
   },
 ];
