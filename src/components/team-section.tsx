@@ -25,7 +25,7 @@ const teamMembers = [
     name: 'Nadya',
     title: 'Desainer Antarmuka & Pengalaman Pengguna',
     description: 'Nadya membawa sentuhan visual yang lembut dan profesional. Ia merancang tampilan antarmuka agar pengguna merasa seperti berada di meja barista sungguhan—setiap tombol, warna, dan animasi dibuat untuk menciptakan pengalaman yang halus dan berkelas.',
-    avatar: 'https://i.pravatar.cc/150?u=nadya',
+    avatar: 'https://i.imgur.com/FjU39DD.jpeg',
     icon: '🎨',
   },
   {
