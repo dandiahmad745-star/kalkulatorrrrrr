@@ -4,6 +4,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Target } from 'lucide-react';
 
 const teamMembers = [
   {
@@ -65,16 +66,19 @@ const TeamSection = () => {
       <CardContent className="space-y-12">
         
         {/* Leader Section */}
-        <div className="rounded-lg bg-primary/5 p-6">
-          <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-            <Avatar className="h-32 w-32 border-4 border-primary">
+        <div className="rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
+            <Avatar className="h-36 w-36 border-4 border-primary shadow-lg">
               <AvatarImage src={leader.avatar} alt={leader.name} />
               <AvatarFallback>{leader.name.charAt(0)}</AvatarFallback>
             </Avatar>
-            <div>
-              <h3 className="text-2xl font-bold text-primary">{leader.name}</h3>
-              <p className="font-semibold text-muted-foreground mb-2">{leader.icon} {leader.title}</p>
-              <p className="text-sm text-foreground/80">{leader.description}</p>
+            <div className="space-y-2">
+              <h3 className="text-3xl font-bold text-primary">{leader.name}</h3>
+              <p className="font-semibold text-muted-foreground flex items-center justify-center md:justify-start gap-2">
+                <Target className="h-5 w-5 text-primary/80"/>
+                {leader.title}
+              </p>
+              <p className="text-sm text-foreground/80 leading-relaxed">{leader.description}</p>
             </div>
           </div>
         </div>
@@ -96,7 +100,7 @@ const TeamSection = () => {
           ))}
         </div>
         
-        <div className="text-center text-muted-foreground italic max-w-2xl mx-auto">
+        <div className="text-center text-muted-foreground italic max-w-2xl mx-auto pt-6">
           <p>
             Bersama, kami membangun CoffeeMixer Lab bukan hanya sebagai alat, tetapi sebagai jembatan antara dunia barista dan kecerdasan buatan.
           </p>
