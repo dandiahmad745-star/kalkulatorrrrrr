@@ -11,7 +11,7 @@ const teamMembers = [
     name: 'Arul Faathir',
     title: 'Visioner & Konseptor Utama',
     description: 'Arul adalah otak di balik ide besar CoffeeMixer Lab. Terinspirasi dari dunia barista dan eksperimen rasa, ia menciptakan konsep kalkulator rasa kopi yang mampu meniru keputusan manusia saat mencampur bahan. Visi Arul adalah menghadirkan alat digital yang membantu café besar menciptakan rasa sempurna dengan konsistensi profesional.',
-    avatar: 'https://i.pravatar.cc/150?u=arul',
+    avatar: 'https://i.imgur.com/1BIKpKi.jpeg',
     icon: '☕',
   },
   {
