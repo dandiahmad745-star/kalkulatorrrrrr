@@ -18,7 +18,7 @@ const teamMembers = [
     name: 'Rendra',
     title: 'Pengembang Sistem AI & Logika Rasa',
     description: 'Rendra bertanggung jawab dalam merancang sistem AI Taste Logic, yaitu algoritma yang mampu menilai keseimbangan rasa (sweet, nutty, creamy, dan bitter). Ia memastikan sistem dapat membaca setiap bahan secara matematis namun tetap terasa manusiawi di hasil akhirnya.',
-    avatar: 'https://i.pravatar.cc/150?u=rendra',
+    avatar: 'https://i.imgur.com/oVd7Qfl.jpeg',
     icon: '💻',
   },
   {
