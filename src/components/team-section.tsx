@@ -3,6 +3,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 const teamMembers = [
   {
@@ -50,6 +51,9 @@ const teamMembers = [
 ];
 
 const TeamSection = () => {
+  const leader = teamMembers[0];
+  const otherMembers = teamMembers.slice(1);
+
   return (
     <Card className="mt-8">
       <CardHeader className="text-center">
@@ -59,8 +63,27 @@ const TeamSection = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-12">
+        
+        {/* Leader Section */}
+        <div className="rounded-lg bg-primary/5 p-6">
+          <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+            <Avatar className="h-32 w-32 border-4 border-primary">
+              <AvatarImage src={leader.avatar} alt={leader.name} />
+              <AvatarFallback>{leader.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="text-2xl font-bold text-primary">{leader.name}</h3>
+              <p className="font-semibold text-muted-foreground mb-2">{leader.icon} {leader.title}</p>
+              <p className="text-sm text-foreground/80">{leader.description}</p>
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Other Members */}
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
-          {teamMembers.map((member) => (
+          {otherMembers.map((member) => (
             <div key={member.name} className="flex flex-col items-center text-center">
               <Avatar className="h-28 w-28 border-4 border-primary/50 mb-4">
                 <AvatarImage src={member.avatar} alt={member.name} />
@@ -72,6 +95,7 @@ const TeamSection = () => {
             </div>
           ))}
         </div>
+        
         <div className="text-center text-muted-foreground italic max-w-2xl mx-auto">
           <p>
             Bersama, kami membangun CoffeeMixer Lab bukan hanya sebagai alat, tetapi sebagai jembatan antara dunia barista dan kecerdasan buatan.
