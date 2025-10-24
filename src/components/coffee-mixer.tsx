@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, Calculator, Timer, Thermometer } from 'lucide-react';
+import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, Calculator, Timer, Thermometer, BookOpen } from 'lucide-react';
 import type { z } from 'genkit';
 
 import type { FlavorProfile, Recipe, IngredientOption, BrandOption, ExperimentResult, TastePreference } from '@/lib/definitions';
@@ -10,6 +10,7 @@ import { FLAVOR_PROFILE_KEYS } from '@/lib/definitions';
 import { capitalize } from '@/lib/utils';
 import { getAIFlavorDescription, getAIExperimentRating, getAICoffeeName } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import { recipeTemplates } from '@/lib/recipe-templates';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ import CostCalculator from './cost-calculator';
 import BaristaMathAssistant from './barista-math-assistant';
 import BrewTimer from './brew-timer';
 import TemperatureCurve from './temperature-curve';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 
 const initialRecipe: Recipe = {
   id: '',
@@ -86,6 +88,7 @@ const CoffeeMixer = forwardRef<{ randomize: (pref: TastePreference) => void }, C
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('profile');
   const [ingredientCosts, setIngredientCosts] = useState<IngredientCost>(getDefaultCosts());
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
 
   const handleIngredientChange = (category: keyof Omit<Recipe, 'id' | 'name'>, value: string | number) => {
      setRecipe(prev => {
@@ -341,6 +344,12 @@ const CoffeeMixer = forwardRef<{ randomize: (pref: TastePreference) => void }, C
     });
   };
 
+  const handleLoadTemplate = (template: Omit<Recipe, 'id'>) => {
+    setRecipe(prev => ({ ...prev, ...template }));
+    setIsTemplateDialogOpen(false);
+    toast({ title: 'Recipe Loaded!', description: `You have loaded the "${template.name}" template.` });
+  };
+
   const flavorProfile = useMemo<FlavorProfile>(() => {
     const baseProfile: FlavorProfile = {
       sweetness: 0, bitterness: 0, acidity: 0, body: 0, aroma: 0, aftertaste: 0, caffeine: 0
@@ -479,6 +488,32 @@ const CoffeeMixer = forwardRef<{ randomize: (pref: TastePreference) => void }, C
             {(Object.keys(ingredientCategories) as (keyof typeof ingredientCategories)[]).map((key) => renderIngredientSelector(key))}
             <Separator />
             <div className="flex flex-wrap gap-2">
+                <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary" className="flex-1">
+                        <BookOpen /> Load Template
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                        <DialogTitle>Load a Recipe Template</DialogTitle>
+                        </DialogHeader>
+                        <ScrollArea className="h-[60vh] rounded-md border p-4">
+                            <div className="space-y-2">
+                                {recipeTemplates.map((template, index) => (
+                                    <Button
+                                    key={index}
+                                    variant="ghost"
+                                    className="w-full justify-start"
+                                    onClick={() => handleLoadTemplate(template)}
+                                    >
+                                    {template.name}
+                                    </Button>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    </DialogContent>
+                </Dialog>
               <Button onClick={() => handleRandomize(null)} variant="secondary" className="flex-1">
                 <Shuffle /> Randomize
               </Button>
@@ -677,3 +712,5 @@ const CoffeeMixer = forwardRef<{ randomize: (pref: TastePreference) => void }, C
 CoffeeMixer.displayName = 'CoffeeMixer';
 
 export default CoffeeMixer;
+
+    
