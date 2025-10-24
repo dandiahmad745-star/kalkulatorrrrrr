@@ -46,7 +46,7 @@ const teamMembers = [
     name: 'Rizky',
     title: 'Pengembang Integrasi & Otomasi',
     description: 'Rizky bertanggung jawab pada bagian teknis otomatisasi, memastikan seluruh fitur—dari Switch Brand System hingga Real-Time Taste Estimator—berjalan lancar. Ia menciptakan fondasi agar website dapat berkembang menjadi platform riset dan inovasi rasa kopi di masa depan.',
-    avatar: 'https://i.pravatar.cc/150?u=rizky',
+    avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkeGI8xKwgXOyg-aO2nxg6_DdQ8waOcUnx-jvJD_dHfw&s=10',
     icon: '🧩',
   },
 ];
