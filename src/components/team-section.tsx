@@ -32,7 +32,7 @@ const teamMembers = [
     name: 'Fikri',
     title: 'Peneliti Rasa & Formulasi Bahan',
     description: 'Sebagai seorang peneliti kopi dan bahan baku, Fikri mengumpulkan data rasa dari berbagai merek sirup, creamer, dan susu. Ia menyusun profil rasa realistis untuk setiap bahan agar sistem bisa menghitung rasa dengan akurat, bukan sekadar tebakan.',
-    avatar: 'https://i.pravatar.cc/150?u=fikri',
+    avatar: 'https://i.pinimg.com/736x/d7/46/26/d74626b4acfce9afe47ad2a1bc0fd8dc.jpg',
     icon: '🔬',
   },
   {
