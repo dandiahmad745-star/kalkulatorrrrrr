@@ -49,3 +49,5 @@ export async function getAICoffeeName(input: GenerateCoffeeNameInput): Promise<{
       return { success: false, error: 'Failed to generate coffee name.' };
     }
 }
+
+    
