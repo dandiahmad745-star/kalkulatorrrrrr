@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb', // Menambah batas ukuran body jika diperlukan
+      timeout: 120, // Meningkatkan timeout menjadi 120 detik
+    },
+  },
 };
 
 export default nextConfig;
