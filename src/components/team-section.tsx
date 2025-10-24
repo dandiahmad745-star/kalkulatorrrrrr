@@ -30,6 +30,11 @@ const teamMembers = [
     role: 'Coffee Science Consultant',
     avatar: 'https://i.pravatar.cc/150?u=dewi',
   },
+  {
+    name: 'Rizky Ananda',
+    role: 'UI/UX Researcher',
+    avatar: 'https://i.pravatar.cc/150?u=rizky',
+  },
 ];
 
 const TeamSection = () => {
@@ -39,7 +44,7 @@ const TeamSection = () => {
         <CardTitle className="text-center text-2xl">Tim Pencipta</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-6">
           {teamMembers.map((member) => (
             <div key={member.name} className="flex flex-col items-center text-center">
               <Avatar className="h-24 w-24 border-4 border-primary/50">
