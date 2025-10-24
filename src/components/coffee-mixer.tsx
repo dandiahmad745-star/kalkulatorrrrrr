@@ -5,7 +5,7 @@ import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, 
 import type { z } from 'genkit';
 
 import type { FlavorProfile, Recipe, IngredientOption, BrandOption, ExperimentResult } from '@/lib/definitions';
-import { ingredientCategories } from '@/lib/ingredients';
+import { ingredientCategories, type IngredientCost } from '@/lib/ingredients';
 import { FLAVOR_PROFILE_KEYS } from '@/lib/definitions';
 import { capitalize } from '@/lib/utils';
 import { getAIFlavorDescription, getAIExperimentRating, getAICoffeeName } from '@/app/actions';
@@ -55,6 +55,22 @@ const initialRecipe: Recipe = {
   toppingsBrand: undefined,
 };
 
+const getDefaultCosts = (): IngredientCost => {
+  const costs: IngredientCost = {};
+  (Object.keys(ingredientCategories) as (keyof typeof ingredientCategories)[]).forEach(category => {
+    ingredientCategories[category].forEach(ingredient => {
+      costs[`${category}__${ingredient.value}`] = ingredient.cost;
+      if (ingredient.brands) {
+        ingredient.brands.forEach(brand => {
+          costs[`${category}__${ingredient.value}__${brand.value}`] = brand.cost;
+        });
+      }
+    });
+  });
+  return costs;
+};
+
+
 const CoffeeMixer = () => {
   const [recipe, setRecipe] = useState<Recipe>(initialRecipe);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
@@ -65,6 +81,7 @@ const CoffeeMixer = () => {
   const [isNamePending, startNameTransition] = useTransition();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('profile');
+  const [ingredientCosts, setIngredientCosts] = useState<IngredientCost>(getDefaultCosts());
 
   const handleIngredientChange = (category: keyof Omit<Recipe, 'id' | 'name'>, value: string | number) => {
      setRecipe(prev => {
@@ -402,7 +419,11 @@ const CoffeeMixer = () => {
             </div>
           </CardContent>
         </Card>
-        <CostCalculator recipe={recipe} />
+        <CostCalculator 
+          recipe={recipe} 
+          costs={ingredientCosts}
+          onCostChange={setIngredientCosts}
+        />
       </div>
 
       {/* Right Column: Results & Saved */}

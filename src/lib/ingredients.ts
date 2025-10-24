@@ -3,6 +3,10 @@ import type { IngredientOption } from './definitions';
 // Note: Costs are fictional and in a generic currency unit for calculation purposes.
 // Cost is per gram or per ml.
 
+export type IngredientCost = {
+  [key: string]: number;
+};
+
 export const coffeeBeans: IngredientOption[] = [
   { label: 'Arabica', value: 'arabica', unit: 'g', scores: { acidity: 2, body: 1, caffeine: 2, aroma: 3 }, color: '#4b382a', cost: 150 },
   { label: 'Robusta', value: 'robusta', unit: 'g', scores: { bitterness: 3, body: 3, caffeine: 4 }, color: '#3d2d1f', cost: 100 },
