@@ -5,7 +5,7 @@
  *
  * - generateRealisticFlavorDescription - A function that generates a realistic flavor description for a coffee recipe.
  * - GenerateRealisticFlavorDescriptionInput - The input type for the generateRealisticFlavorDescription function.
- * - GenerateRealisticFlavorDescriptionOutput - The return type for the generateRealisticFlavorDescription function.
+ * - GenerateRealisticFlavorDescriptionOutput - The return type for the generateRealisticflavorDescription function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -19,7 +19,7 @@ const GenerateRealisticFlavorDescriptionInputSchema = z.object({
   creamer: z.string().describe('The type, amount, and brand of creamer added (e.g., "15ml french-vanilla-creamer (coffeemate)").'),
   syrup: z.string().describe('The type, amount, and brand of syrup added (e.g., "15ml vanilla-syrup (monin)").'),
   sweetener: z.string().describe('The type, amount, and brand of sweetener added (e.g., "5g gula-pasir").'),
-  toppings: z.string().describe('The type, amount, and brand of toppings added (e.g., "10g chocolate-shavings (van-houten)").'),
+  toppings: z.string().describe('The type, amount, and brand of toppings added (e.g., "10g chocolate-shavings (van-houten)", "rempah-nusantara", "chopped-nuts").'),
 });
 export type GenerateRealisticFlavorDescriptionInput = z.infer<typeof GenerateRealisticFlavorDescriptionInputSchema>;
 
