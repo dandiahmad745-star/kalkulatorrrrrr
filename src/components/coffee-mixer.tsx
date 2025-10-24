@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useMemo, useTransition, useCallback } from 'react';
-import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, DollarSign, Calculator, Timer } from 'lucide-react';
+import { Bot, Lightbulb, Plus, Shuffle, Sparkles, Star, FlaskConical, ThumbsUp, ThumbsDown, Calculator, Timer } from 'lucide-react';
 import type { z } from 'genkit';
 
 import type { FlavorProfile, Recipe, IngredientOption, BrandOption, ExperimentResult } from '@/lib/definitions';
 import { ingredientCategories } from '@/lib/ingredients';
 import { FLAVOR_PROFILE_KEYS } from '@/lib/definitions';
 import { capitalize } from '@/lib/utils';
-import { getAIFlavorDescription, getAIExperimentRating, getAIOptimalBrewTime } from '@/app/actions';
+import { getAIFlavorDescription, getAIExperimentRating, getAICoffeeName } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,11 +31,12 @@ import BrewTimer from './brew-timer';
 
 const initialRecipe: Recipe = {
   id: '',
+  name: 'Your Current Blend',
   coffeeBeans: 'arabica',
   coffeeBeansAmount: 18,
   roastLevel: 'medium',
   roastLevelAmount: 18,
-  brewingMethod: 'espresso',
+  brewingMethod: 'espresso-machine',
   brewingMethodAmount: 40,
   milk: 'none',
   milkAmount: 0,
@@ -58,10 +59,11 @@ const CoffeeMixer = () => {
   const [aiSuggestion, setAiSuggestion] = useState('');
   const [experimentResult, setExperimentResult] = useState<ExperimentResult | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isNamePending, startNameTransition] = useTransition();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('profile');
 
-  const handleIngredientChange = (category: keyof Recipe, value: string | number) => {
+  const handleIngredientChange = (category: keyof Omit<Recipe, 'id' | 'name'>, value: string | number) => {
      setRecipe(prev => {
       const newRecipe = { ...prev, [category]: value };
 
@@ -143,7 +145,7 @@ const CoffeeMixer = () => {
       }
     });
 
-    setRecipe(prev => ({ ...prev, ...randomRecipe as Recipe, id: '' }));
+    setRecipe(prev => ({ ...prev, ...randomRecipe as Recipe, id: '', name: 'Your Current Blend' }));
     toast({ title: 'Random Recipe Generated!', description: 'A new concoction is ready for you.' });
   };
 
@@ -159,15 +161,17 @@ const CoffeeMixer = () => {
   };
   
   const handleCopyRecipe = (recipeToCopy: Recipe) => {
-    const text = Object.entries(recipeToCopy)
-      .filter(([key, value]) => key !== 'id' && value !== 'none' && value && !key.endsWith('Amount'))
-      .map(([key, value]) => {
-          const amountKey = `${key}Amount` as keyof Recipe;
-          const amount = recipeToCopy[amountKey];
-          const unit = ingredientCategories[key as keyof typeof ingredientCategories]?.find(i => i.value === value)?.unit || '';
-          return `${capitalize(key.replace(/([A-Z])/g, ' $1'))}: ${capitalize(value as string)} (${amount}${unit})`
-      })
-      .join('\n');
+    const text = [
+      `Name: ${recipeToCopy.name}`,
+      ...Object.entries(recipeToCopy)
+        .filter(([key, value]) => key !== 'id' && key !== 'name' && value !== 'none' && value && !key.endsWith('Amount'))
+        .map(([key, value]) => {
+            const amountKey = `${key}Amount` as keyof Recipe;
+            const amount = recipeToCopy[amountKey];
+            const unit = ingredientCategories[key as keyof typeof ingredientCategories]?.find(i => i.value === value)?.unit || '';
+            return `${capitalize(key.replace(/([A-Z])/g, ' $1'))}: ${capitalize(value as string)} (${amount}${unit})`
+        })
+    ].join('\n');
     navigator.clipboard.writeText(text);
     toast({ title: 'Recipe Copied!', description: 'Ready to share your masterpiece.' });
   };
@@ -219,6 +223,33 @@ const CoffeeMixer = () => {
     });
   };
 
+  const handleGenerateName = () => {
+    startNameTransition(async () => {
+      const getMainFlavor = () => {
+        if (recipe.syrup !== 'none') return recipe.syrup;
+        if (recipe.creamer !== 'none') return recipe.creamer;
+        if (recipe.milk !== 'none') return recipe.milk;
+        return 'none';
+      };
+      
+      const input = {
+        coffeeBeans: recipe.coffeeBeans,
+        roastLevel: recipe.roastLevel,
+        brewingMethod: recipe.brewingMethod,
+        mainFlavor: getMainFlavor(),
+        topping: recipe.toppings,
+      };
+
+      const result = await getAICoffeeName(input);
+      if (result.success) {
+        setRecipe(prev => ({ ...prev, name: result.data.name }));
+        toast({ title: 'Name Generated!', description: `Your coffee is now called "${result.data.name}".` });
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: result.error || 'Could not generate coffee name.' });
+      }
+    });
+  };
+
   const flavorProfile = useMemo<FlavorProfile>(() => {
     const baseProfile: FlavorProfile = {
       sweetness: 0, bitterness: 0, acidity: 0, body: 0, aroma: 0, aftertaste: 0, caffeine: 0
@@ -258,14 +289,14 @@ const CoffeeMixer = () => {
     brandKey: keyof Recipe,
     label: string
   ) => {
-    const selectedIngredient = ingredientCategories[ingredientKey].find(i => i.value === recipe[ingredientKey]);
-    if (recipe[ingredientKey] !== 'none' && selectedIngredient?.brands && selectedIngredient.brands.length > 0) {
+    const selectedIngredient = ingredientCategories[ingredientKey].find(i => i.value === recipe[ingredientKey as keyof Recipe]);
+    if (recipe[ingredientKey as keyof Recipe] !== 'none' && selectedIngredient?.brands && selectedIngredient.brands.length > 0) {
       return (
         <div className="space-y-2 mt-2">
           <Label className="text-sm text-muted-foreground">{label}</Label>
           <Select
             value={recipe[brandKey] as string || ''}
-            onValueChange={(value) => handleIngredientChange(brandKey, value)}
+            onValueChange={(value) => handleIngredientChange(brandKey as any, value)}
           >
             <SelectTrigger>
               <SelectValue placeholder={`Select ${label}`} />
@@ -302,7 +333,7 @@ const CoffeeMixer = () => {
           <div className={`${showAmountInput ? 'col-span-2' : 'col-span-1'}`}>
             <Select
               value={recipe[cat as keyof Recipe] as string || 'none'}
-              onValueChange={(value) => handleIngredientChange(cat as keyof Recipe, value)}
+              onValueChange={(value) => handleIngredientChange(cat as any, value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder={`Select ${cat}`} />
@@ -321,7 +352,7 @@ const CoffeeMixer = () => {
               <Input
                 type="number"
                 value={recipe[amountKey] as number}
-                onChange={(e) => handleIngredientChange(amountKey, parseInt(e.target.value, 10) || 0)}
+                onChange={(e) => handleIngredientChange(amountKey as any, parseInt(e.target.value, 10) || 0)}
                 className="pr-8"
                 disabled={isAmountDisabled}
               />
@@ -346,7 +377,7 @@ const CoffeeMixer = () => {
             <CardDescription>Craft your ideal coffee.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {Object.keys(ingredientCategories).map((key) => renderIngredientSelector(key as keyof typeof ingredientCategories))}
+            {(Object.keys(ingredientCategories) as (keyof typeof ingredientCategories)[]).map((key) => renderIngredientSelector(key))}
             <Separator />
             <div className="flex flex-wrap gap-2">
               <Button onClick={handleRandomize} variant="secondary" className="flex-1">
@@ -367,7 +398,7 @@ const CoffeeMixer = () => {
         <Card>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="p-6">
-              <TabsList className="grid h-auto w-full grid-cols-2 md:h-10 md:grid-cols-4">
+              <TabsList className="grid h-auto w-full grid-cols-1 md:h-10 md:grid-cols-4">
                 <TabsTrigger value="profile"><Star className="mr-2"/> Flavor Profile</TabsTrigger>
                 <TabsTrigger value="experiment"><FlaskConical className="mr-2"/> Experiment</TabsTrigger>
                 <TabsTrigger value="barista-math"><Calculator className="mr-2"/> Barista Math</TabsTrigger>
@@ -376,9 +407,14 @@ const CoffeeMixer = () => {
             </div>
             
             <TabsContent value="profile">
-              <CardHeader className="pt-0">
-                <CardTitle>Your Current Blend</CardTitle>
-                <CardDescription>The estimated flavor profile and description of your creation.</CardDescription>
+              <CardHeader className="pt-0 flex-row items-center justify-between">
+                <div>
+                  <CardTitle>{isNamePending ? 'Naming...' : recipe.name}</CardTitle>
+                  <CardDescription>The estimated flavor profile and description of your creation.</CardDescription>
+                </div>
+                <Button onClick={handleGenerateName} size="icon" variant="ghost" disabled={isNamePending}>
+                  <Sparkles className="h-5 w-5"/>
+                </Button>
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-8 md:grid-cols-5">
                 <div className="md:col-span-2">

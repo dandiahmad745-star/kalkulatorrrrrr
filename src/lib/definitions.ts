@@ -28,6 +28,7 @@ export interface IngredientOption {
 
 export interface Recipe {
   id: string;
+  name: string;
   coffeeBeans: string;
   coffeeBeansAmount: number;
   roastLevel: string;

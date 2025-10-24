@@ -30,7 +30,7 @@ const RecipeCard = ({ recipe, onCopy, onDelete }: RecipeCardProps) => {
 
   const recipeDetails = Object.entries(recipe)
     .filter(([key, value]) => {
-      return !key.endsWith('Amount') && !key.endsWith('Brand') && key !== 'id' && value !== 'none' && value;
+      return !key.endsWith('Amount') && !key.endsWith('Brand') && !['id', 'name'].includes(key) && value !== 'none' && value;
     })
     .map(([key, value]) => {
       const amountKey = `${key}Amount` as keyof Recipe;
@@ -56,7 +56,7 @@ const RecipeCard = ({ recipe, onCopy, onDelete }: RecipeCardProps) => {
   return (
     <Card className="flex flex-col bg-secondary/50">
       <CardHeader>
-        <CardTitle className="text-xl">Custom Blend</CardTitle>
+        <CardTitle className="text-xl">{recipe.name || 'Custom Blend'}</CardTitle>
         <CardDescription>Saved on {new Date(recipe.id).toLocaleDateString()}</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
