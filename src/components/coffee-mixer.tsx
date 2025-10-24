@@ -186,7 +186,7 @@ const CoffeeMixer = () => {
         const amountKey = `${key}Amount` as keyof Recipe;
         const amount = recipe[amountKey];
         const unit = ingredientCategories[key as keyof typeof ingredientCategories]?.find(o => o.value === name)?.unit;
-        if (name === 'none') return 'none';
+        if (name === 'none' || !amount) return 'none';
         
         let formatted = `${amount}${unit} ${name}`;
         if (brand) {
@@ -195,8 +195,6 @@ const CoffeeMixer = () => {
         return formatted;
       };
 
-      // This input needs to be updated to match the AI flow, which I am not updating in this turn.
-      // For now, I'll remove the new ingredients from the input to avoid breaking the AI call.
       const input = {
         coffeeBeans: formatIngredient('coffeeBeans', recipe.coffeeBeans),
         roastLevel: recipe.roastLevel,
@@ -204,6 +202,7 @@ const CoffeeMixer = () => {
         milk: formatIngredient('milk', recipe.milk, recipe.milkBrand),
         creamer: formatIngredient('creamer', recipe.creamer, recipe.creamerBrand),
         syrup: formatIngredient('syrup', recipe.syrup, recipe.syrupBrand),
+        sweetener: formatIngredient('sweetener', recipe.sweetener, recipe.sweetenerBrand),
         toppings: formatIngredient('toppings', recipe.toppings, recipe.toppingsBrand),
       };
 
@@ -267,18 +266,26 @@ const CoffeeMixer = () => {
         const selectedValue = recipe[cat as keyof Recipe] as string;
         const amount = recipe[`${cat}Amount` as keyof Recipe] as number || 0;
         
+        if (!selectedValue || selectedValue === 'none' || amount === 0) {
+          return;
+        }
+
         const option = ingredientCategories[cat].find(o => o.value === selectedValue);
+        if (!option) return;
+
         const unit = option?.unit;
+        // The multiplier makes the flavor calculation more realistic based on quantity.
+        // Base amount for 1x multiplier is 10g or 15ml.
         const multiplier = amount / (unit === 'g' ? 10 : 15);
 
-        if (option?.scores[key]) {
+        if (option.scores[key]) {
           score += (option.scores[key]! * multiplier);
         }
 
         const brandKey = `${cat}Brand` as keyof Recipe;
         const selectedBrandValue = recipe[brandKey] as string | undefined;
 
-        if (option?.brands && selectedBrandValue) {
+        if (option.brands && selectedBrandValue) {
           const brand = option.brands.find(b => b.value === selectedBrandValue);
           if (brand?.scores[key]) {
             score += (brand.scores[key]! * multiplier);
@@ -404,7 +411,7 @@ const CoffeeMixer = () => {
         <Card>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="p-6">
-              <TabsList className="grid h-auto w-full grid-cols-1 md:h-10 md:grid-cols-4">
+              <TabsList className="grid h-auto w-full grid-cols-1 sm:grid-cols-2 md:h-10 md:grid-cols-4">
                 <TabsTrigger value="profile"><Star className="mr-2"/> Flavor Profile</TabsTrigger>
                 <TabsTrigger value="experiment"><FlaskConical className="mr-2"/> Experiment</TabsTrigger>
                 <TabsTrigger value="barista-math"><Calculator className="mr-2"/> Barista Math</TabsTrigger>
@@ -568,5 +575,3 @@ const CoffeeMixer = () => {
 };
 
 export default CoffeeMixer;
-
-    

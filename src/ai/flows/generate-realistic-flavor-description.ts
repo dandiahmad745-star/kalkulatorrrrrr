@@ -18,13 +18,14 @@ const GenerateRealisticFlavorDescriptionInputSchema = z.object({
   milk: z.string().describe('The type, amount, and brand of milk added (e.g., "15ml whole-milk (greenfields)").'),
   creamer: z.string().describe('The type, amount, and brand of creamer added (e.g., "15ml french-vanilla-creamer (coffeemate)").'),
   syrup: z.string().describe('The type, amount, and brand of syrup added (e.g., "15ml vanilla-syrup (monin)").'),
+  sweetener: z.string().describe('The type, amount, and brand of sweetener added (e.g., "5g gula-pasir").'),
   toppings: z.string().describe('The type, amount, and brand of toppings added (e.g., "10g chocolate-shavings (van-houten)").'),
 });
 export type GenerateRealisticFlavorDescriptionInput = z.infer<typeof GenerateRealisticFlavorDescriptionInputSchema>;
 
 const GenerateRealisticFlavorDescriptionOutputSchema = z.object({
-  flavorDescription: z.string().describe('A realistic flavor description of the coffee recipe in Indonesian.'),
-  suggestion: z.string().describe('A suggestion to improve the coffee recipe in Indonesian. For example: "kurangi 10 ml sirup agar rasa kopi tidak terlalu manis".'),
+  flavorDescription: z.string().describe('A realistic flavor description of the coffee recipe in Indonesian, suitable for a professional cafe menu.'),
+  suggestion: z.string().describe('A suggestion to improve the coffee recipe in Indonesian, focusing on balance and commercial viability. For example: "kurangi 10 ml sirup agar rasa kopi tidak terlalu manis dan lebih seimbang".'),
 });
 export type GenerateRealisticFlavorDescriptionOutput = z.infer<typeof GenerateRealisticFlavorDescriptionOutputSchema>;
 
@@ -38,17 +39,21 @@ const prompt = ai.definePrompt({
   name: 'generateRealisticFlavorDescriptionPrompt',
   input: {schema: GenerateRealisticFlavorDescriptionInputSchema},
   output: {schema: GenerateRealisticFlavorDescriptionOutputSchema},
-  prompt: `Anda adalah seorang ahli perisa kopi. Berdasarkan resep kopi berikut, buatlah deskripsi rasa yang realistis dan menarik dalam Bahasa Indonesia.
+  prompt: `Anda adalah seorang ahli perisa kopi (flavorist) dan konsultan F&B untuk kafe besar. Berdasarkan resep kopi berikut, buatlah deskripsi rasa yang realistis, menarik, dan profesional dalam Bahasa Indonesia, seolah-olah untuk menu kafe.
 
-Biji Kopi: {{{coffeeBeans}}}
-Tingkat Sangrai: {{{roastLevel}}}
-Metode Seduh: {{{brewingMethod}}}
-Susu: {{{milk}}}
-Krimer: {{{creamer}}}
-Sirup: {{{syrup}}}
-Topping: {{{toppings}}}
+Resep:
+- Biji Kopi: {{{coffeeBeans}}}
+- Tingkat Sangrai: {{{roastLevel}}}
+- Metode Seduh: {{{brewingMethod}}}
+- Susu: {{{milk}}}
+- Krimer: {{{creamer}}}
+- Sirup: {{{syrup}}}
+- Pemanis: {{{sweetener}}}
+- Topping: {{{toppings}}}
 
-Selain deskripsi rasa, berikan juga satu saran penyesuaian untuk meningkatkan keseimbangan rasa resep ini (contoh: "kurangi 10 ml sirup agar rasa kopi tidak terlalu manis").`,
+Tugas Anda:
+1.  **flavorDescription**: Tulis deskripsi rasa yang mendetail. Fokus pada bagaimana setiap bahan berinteraksi untuk menciptakan profil rasa akhir (manis, pahit, asam, body, aroma).
+2.  **suggestion**: Berikan satu saran konkret dan profesional untuk meningkatkan keseimbangan dan potensi komersial resep ini. Contoh: "Untuk menonjolkan profil fruity dari biji Arabica, pertimbangkan untuk mengurangi sirup vanila sebanyak 5ml."`,
 });
 
 const generateRealisticFlavorDescriptionFlow = ai.defineFlow(

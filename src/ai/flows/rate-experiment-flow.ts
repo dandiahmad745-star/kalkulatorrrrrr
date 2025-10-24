@@ -18,6 +18,7 @@ const RateExperimentInputSchema = z.object({
   milk: z.string().describe('The type, amount, and brand of milk added (e.g., "15ml whole-milk (greenfields)").'),
   creamer: z.string().describe('The type, amount, and brand of creamer added (e.g., "15ml french-vanilla-creamer (coffeemate)").'),
   syrup: z.string().describe('The type, amount, and brand of syrup added (e.g., "15ml vanilla-syrup (monin)").'),
+  sweetener: z.string().describe('The type, amount, and brand of sweetener added (e.g., "5g gula-pasir").'),
   toppings: z.string().describe('The type, amount, and brand of toppings added (e.g., "10g chocolate-shavings (van-houten)").'),
 });
 export type RateExperimentInput = z.infer<typeof RateExperimentInputSchema>;
@@ -40,7 +41,7 @@ const prompt = ai.definePrompt({
   name: 'rateExperimentPrompt',
   input: {schema: RateExperimentInputSchema},
   output: {schema: RateExperimentOutputSchema},
-  prompt: `Anda adalah seorang juri barista dan ahli peracik kopi. Tugas Anda adalah menilai sebuah resep kopi eksperimental berdasarkan bahan-bahan yang diberikan.
+  prompt: `Anda adalah seorang juri barista dan ahli peracik kopi profesional untuk operasional kafe besar. Tugas Anda adalah menilai sebuah resep kopi eksperimental berdasarkan bahan-bahan yang diberikan dengan standar industri.
 
 Resep Eksperimental:
 - Biji Kopi: {{{coffeeBeans}}}
@@ -49,13 +50,14 @@ Resep Eksperimental:
 - Susu: {{{milk}}}
 - Krimer: {{{creamer}}}
 - Sirup: {{{syrup}}}
+- Pemanis: {{{sweetener}}}
 - Topping: {{{toppings}}}
 
 Berdasarkan resep di atas, berikan penilaian objektif Anda dalam format JSON yang diminta:
-1.  **realisticTasteDescription**: Jelaskan seperti apa kira-kira rasa minuman ini di dunia nyata.
-2.  **suitableForServing**: Berikan penilaian (true/false) apakah resep ini cukup seimbang dan enak untuk disajikan kepada pelanggan di kafe.
-3.  **experimentalScore**: Berikan skor numerik antara 0-100 yang menilai kreativitas, keseimbangan rasa, dan potensi keseluruhan dari resep ini.
-4.  **justification**: Berikan justifikasi singkat untuk skor dan kelayakan penyajian yang Anda berikan. Jelaskan mengapa resep ini berhasil atau gagal.`,
+1.  **realisticTasteDescription**: Jelaskan seperti apa kira-kira rasa minuman ini di dunia nyata dari sudut pandang seorang profesional.
+2.  **suitableForServing**: Berikan penilaian (true/false) apakah resep ini memiliki keseimbangan rasa dan kualitas yang layak untuk disajikan kepada pelanggan di kafe premium.
+3.  **experimentalScore**: Berikan skor numerik antara 0-100 yang menilai kreativitas, keseimbangan, potensi komersial, dan keunikan resep.
+4.  **justification**: Berikan justifikasi singkat dan profesional untuk skor dan kelayakan penyajian yang Anda berikan. Jelaskan mengapa resep ini berhasil atau gagal dari segi bisnis dan rasa. Berikan saran perbaikan yang konkret.`,
 });
 
 const rateExperimentFlow = ai.defineFlow(
